@@ -963,5 +963,176 @@ body {
     <script src="admin.js"></script>
 </body>
                       </html>
+/* NextGen App Stylesheet */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #0f172a;
+    color: white;
+}
+
+/* ⚠️ ဒီအပိုင်းက စာမျက်နှာတွေကို ပိတ်/ဖွင့် လုပ်ပေးတာဖြစ်လို့ အတိအကျ ထည့်ပေးပါ */
+.page-section {
+    display: block; /* ပုံမှန်အချိန်တွင် ပြရန် */
+    padding: 15px;
+}
+
+.page-section.hidden {
+    display: none !important; /* hidden ပါလာလျှင် လုံးဝဖျောက်ထားရန် */
+}
+
+/* Feed Cards */
+.feed-card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #334155;
+}
+
+/* Navigation Buttons */
+.nav-item {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+}
+
+.nav-item.active {
+    color: #38bdf8;
+    background: #1e293b;
+}
+
+/* Comment Keyboard Panel */
+.comment-keyboard-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    padding: 15px;
+    border-top: 1px solid #334155;
+    border-radius: 16px 16px 0 0;
+    z-index: 200;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+}
+
+.comment-keyboard-panel.hidden {
+    display: none !important;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen App</title>
+    <!-- CSS ဖိုင်နဲ့ ချိတ်ဆက်ထားခြင်း -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div style="padding: 12px 15px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100;">
+        <span id="app-logo" onclick="handleLogoClick()" style="font-size: 22px; font-weight: bold; color: #38bdf8; cursor: pointer; user-select: none;">
+            NextGen
+        </span>
+        <div onclick="switchPage('profile', document.getElementById('nav-profile-btn'))" style="cursor: pointer;">
+            <img id="top-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="content-wrapper" style="padding-bottom: 80px;">
+        
+        <!-- 1. HOME Сာမျက်နှာ -->
+        <section id="feed-page" class="page-section">
+            <div id="post-input-box" style="flex-direction: column; gap: 10px; border-radius: 16px; display: flex; background: #1e293b; padding: 15px; margin-bottom: 20px;">
+                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px;">
+                    <label style="color: #38bdf8; font-size: 14px; font-weight: bold;">🖼️ Multimedia Post</label>
+                    <button onclick="alert('Database ချိတ်ဆက်ပြီးပါက တင်နိုင်ပါမည်။')" style="background: #38bdf8; color: black; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">Post</button>
+                </div>
+            </div>
+            <div id="feed-container"></div>
+        </section>
+
+        <!-- 2. VIDEO စာမျက်နှာ -->
+        <section id="video-page" class="page-section hidden">
+            <h3 style="color: #38bdf8; text-align: center; margin-bottom: 15px;">🎥 NextGen Videos</h3>
+            <div id="video-container"></div>
+        </section>
+
+        <!-- 3. ADS စာမျက်နှာ -->
+        <section id="ads-page" class="page-section hidden">
+            <h3 style="color: #eab308; text-align: center; margin-bottom: 15px;">💰 Sponsor Ads</h3>
+            <div id="ads-container"></div>
+        </section>
+
+        <!-- 4. PROFILE စာမျက်နှာ -->
+        <section id="profile-page" class="page-section hidden">
+            <h3 style="margin-bottom: 20px; color: #38bdf8;">မန်ဘာအကောင့်နှင့် ပရိုဖိုင်</h3>
+            
+            <!-- Login Box -->
+            <div id="login-container" class="feed-card">
+                <h4 style="margin-top: 0; color: #38bdf8; margin-bottom: 15px;">အကောင့်ဝင်ရန်</h4>
+                <input type="text" id="login-username" placeholder="အသုံးပြုသူအမည် (Username)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box;">
+                <input type="password" id="login-password" placeholder="လျှို့ဝှက်နံပါတ် (Password)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
+                <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Login ဝင်မည်</button>
+            </div>
+
+            <!-- Profile Info Box -->
+            <div id="profile-container" class="feed-card hidden" style="text-align: center;">
+                <div style="position: relative; display: inline-block; margin-bottom: 15px;">
+                    <img id="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #38bdf8;">
+                    <label for="avatar-upload" style="position: absolute; bottom: 0; right: 0; background: #38bdf8; color: black; padding: 6px; border-radius: 50%; cursor: pointer; font-size: 12px;">📷</label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadProfilePicture()">
+                </div>
+                <h3 id="profile-name" style="margin: 5px 0; color: white;">R Lay</h3>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">NextGen Premium Member</p>
+                <button onclick="handleLogout()" style="background: #ef4444; color: white; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">အကောင့်မှ ထွက်မည်</button>
+            </div>
+        </section>
+
+        <!-- Admin Page -->
+        <section id="admin-page" class="page-section hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #ef4444;">Admin Panel</h3>
+                <button onclick="exitAdminPanel()" style="background: #334155; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">ထွက်မည် ↩</button>
+            </div>
+            <div id="admin-moderation-list"></div>
+        </section>
+
+    </main>
+
+    <!-- Comment Keyboard Box -->
+    <div id="keyboard-comment-box" class="comment-keyboard-panel hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: #38bdf8; font-weight: bold;">💬 ကွန်မန့်ပေးပို့ရန်</span>
+            <span onclick="closeCommentKeyboard()" style="cursor: pointer; color: #ef4444; font-size: 14px; font-weight: bold;">ပိတ်မည် ✕</span>
+        </div>
+        <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." style="flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
+            <button id="keyboard-comment-send-btn" style="background: #38bdf8; color: black; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Send</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 90;">
+        <button class="nav-item active" onclick="switchPage('feed', this)">Home</button>
+        <button class="nav-item" onclick="switchPage('video', this)">🎥 Video</button>
+        <button class="nav-item" onclick="switchPage('ads', this)">📢 Ads</button>
+        <button id="nav-profile-btn" class="nav-item" onclick="switchPage('profile', this)">👤 Profile</button>
+    </nav>
+
+    <script src="admin.js"></script>
+</body>
+    </html>
                   
 
