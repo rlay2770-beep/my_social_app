@@ -1,359 +1,457 @@
-<!DOCTYPE html>
-<html lang="my">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NextGen Social Platform</title>
+import React, { useState } from 'react';
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Compass, 
+  User, 
+  Home, 
+  Send, 
+  X, 
+  Globe, 
+  MapPin, 
+  Edit3 
+} from 'lucide-react';
 
-  <!-- Tailwind CSS & FontAwesome Icons -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+export default function NextGenApp() {
+  // Current User State
+  const [currentUser, setCurrentUser] = useState({
+    id: "user_001",
+    name: "NextGen User",
+    bio: "Welcome to my NextGen Social Profile!",
+    gender: "Male",
+    country: "Myanmar",
+    website: "https://nextgen.app",
+    avatar: "N"
+  });
+
+  // Navigation State
+  const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'explore' | 'profile'
+  const [feedType, setFeedType] = useState('news'); // 'news' | 'live'
   
-  <style>
-    .active-tab {
-      color: #2563eb;
-      border-bottom: 3px solid #2563eb;
+  // Modals & Inputs
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [newPostText, setNewPostText] = useState('');
+  const [commentInputs, setCommentInputs] = useState({});
+  const [activeCommentPostId, setActiveCommentPostId] = useState(null);
+
+  // Profile Edit Form State
+  const [editFormData, setEditFormData] = useState({ ...currentUser });
+
+  // Posts State
+  const [posts, setPosts] = useState([
+    {
+      id: "post_1",
+      author: "NextGen User",
+      avatar: "N",
+      time: "၀၀:၃၃",
+      content: "Like တွေကို တစ်ယောက်ထဲ အများကြီး ပေးလို့မရအောင် စနစ်ပြင်ထားပြီးပါပြီ။ နှိပ်လိုက်ရင် Like တိုးမည်/ပြန်လျော့မည်။",
+      likedBy: [], // Array of user IDs who liked this
+      comments: []
+    },
+    {
+      id: "post_2",
+      author: "NextGen User",
+      avatar: "N",
+      time: "၀၀:၃၁",
+      content: "ဆရာ ဒါပဲရသေးတယ်",
+      likedBy: ["user_002", "user_003"],
+      comments: [
+        { id: "c1", author: "NextGen Admin", text: "ကောင်းမွန်ပါတယ်! ဆက်လက်ကြိုးစားပါ။" }
+      ]
+    },
+    {
+      id: "post_3",
+      author: "NextGen Admin",
+      avatar: "A",
+      time: "၀၀:၂၉",
+      content: "Welcome to NextGen Social Platform! Phase 1 & 2 Update မှာ Navigation, Profile Edit, Dynamic Likes နဲ့ Comments တွေ အပြည့်အဝ အလုပ်လုပ်ပါပြီ။ 🚀",
+      likedBy: ["user_001"],
+      comments: []
     }
-  </style>
-</head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans pb-24">
+  ]);
 
-  <!-- 1. HEADER / NAVIGATION BAR -->
-  <header class="bg-white shadow sticky top-0 z-40 px-4 py-2 border-b">
-    <div class="max-w-xl mx-auto flex justify-between items-center">
-      <h1 class="text-2xl font-black text-blue-600 tracking-wide flex items-center gap-2">
-        <i class="fa-solid fa-bolt text-yellow-500"></i> NextGen
-      </h1>
-      <div class="flex gap-2 items-center">
-        <button onclick="switchTab('profile')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full font-semibold hover:bg-blue-100 transition text-xs flex items-center gap-2">
-          <i class="fa-solid fa-user"></i> My Profile
-        </button>
-      </div>
-    </div>
-  </header>
+  // 1. Toggle Like (Fixed Bug: One like per user)
+  const handleLikeToggle = (postId) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post => {
+        if (post.id === postId) {
+          const hasLiked = post.likedBy.includes(currentUser.id);
+          const updatedLikedBy = hasLiked
+            ? post.likedBy.filter(id => id !== currentUser.id)
+            : [...post.likedBy, currentUser.id];
+          return { ...post, likedBy: updatedLikedBy };
+        }
+        return post;
+      })
+    );
+  };
 
-  <!-- 2. NAVIGATION TABS (သီးသန့် စာမျက်နှာများ ကူးပြောင်းရန်) -->
-  <nav class="bg-white border-b mb-4 sticky top-[53px] z-30 shadow-sm">
-    <div class="max-w-xl mx-auto flex justify-around text-sm font-bold text-gray-500">
-      <button id="tab-home" onclick="switchTab('home')" class="py-3 px-4 active-tab flex items-center gap-2">
-        <i class="fa-solid fa-house"></i> Feeds
-      </button>
-      <button id="tab-explore" onclick="switchTab('explore')" class="py-3 px-4 flex items-center gap-2">
-        <i class="fa-solid fa-compass"></i> Explore
-      </button>
-      <button id="tab-profile" onclick="switchTab('profile')" class="py-3 px-4 flex items-center gap-2">
-        <i class="fa-solid fa-circle-user"></i> Profile
-      </button>
-    </div>
-  </nav>
+  // 2. Create New Post
+  const handleCreatePost = (e) => {
+    e.preventDefault();
+    if (!newPostText.trim()) return;
 
-  <!-- MAIN CONTENT CONTAINER -->
-  <main class="max-w-xl mx-auto px-4">
-
-    <!-- ================= PAGE 1: FEEDS (HOME) ================= -->
-    <div id="page-home" class="page-content">
-      
-      <!-- Post Creation Box -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
-        <div class="flex gap-3 mb-3">
-          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm" id="postAvatar">U</div>
-          <textarea id="postInput" rows="2" class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-400 outline-none" placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?"></textarea>
-        </div>
-        <div class="flex justify-between items-center border-t pt-2">
-          <div class="flex gap-4 text-gray-400 text-base pl-2">
-            <button class="hover:text-blue-500"><i class="fa-regular fa-image"></i></button>
-            <button class="hover:text-blue-500"><i class="fa-regular fa-face-smile"></i></button>
-          </div>
-          <button onclick="createPost()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2 rounded-xl transition shadow">
-            Post
-          </button>
-        </div>
-      </div>
-
-      <!-- Feeds List Header -->
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="font-bold text-gray-800 text-base">News Feed</h3>
-        <span class="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded-md">Live Feed</span>
-      </div>
-
-      <!-- Post Feed Items -->
-      <div id="postsFeed" class="space-y-4">
-        <!-- Posts will render dynamically -->
-      </div>
-    </div>
-
-    <!-- ================= PAGE 2: EXPLORE ================= -->
-    <div id="page-explore" class="page-content hidden">
-      <div class="bg-white p-5 rounded-2xl shadow-sm border text-center py-10">
-        <i class="fa-solid fa-compass text-4xl text-blue-500 mb-3"></i>
-        <h3 class="font-bold text-lg text-gray-800">Explore Trends</h3>
-        <p class="text-xs text-gray-500 mt-1">နောက်ဆုံးရ ထိတွေ့မှုများနှင့် Trending ခေါင်းစဉ်များကို ဒီနေရာမှာ တွေ့မြင်ရပါမည်။</p>
-      </div>
-    </div>
-
-    <!-- ================= PAGE 3: USER PROFILE ================= -->
-    <div id="page-profile" class="page-content hidden">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div class="h-32 bg-gradient-to-r from-blue-500 to-indigo-600 relative" id="coverDisplay"></div>
-        <div class="p-4 relative pt-0">
-          <div class="-mt-12 mb-3 flex justify-between items-end">
-            <div class="w-20 h-20 bg-white p-1 rounded-full shadow-md">
-              <div id="avatarDisplay" class="w-full h-full bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl uppercase">
-                U
-              </div>
-            </div>
-            <button onclick="openProfileModal()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl border font-bold flex items-center gap-1">
-              <i class="fa-solid fa-pen"></i> Edit Profile
-            </button>
-          </div>
-          
-          <div class="flex items-center gap-2">
-            <h2 id="userNameDisplay" class="text-xl font-bold text-gray-900">User Name</h2>
-            <span id="userRoleBadge" class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full uppercase">USER</span>
-          </div>
-          
-          <p id="bioDisplay" class="text-gray-600 mt-2 text-xs leading-relaxed">Bio မရှိသေးပါ။ ပြင်ဆင်ရန် Edit Profile ကို နှိပ်ပါ။</p>
-          
-          <div class="mt-4 text-xs text-gray-500 grid grid-cols-2 gap-2 border-t pt-3">
-            <p><i class="fa-solid fa-globe text-gray-400 mr-1"></i> <span id="countryDisplay" class="font-medium text-gray-700">Myanmar</span></p>
-            <p><i class="fa-solid fa-venus-mars text-gray-400 mr-1"></i> <span id="genderDisplay" class="font-medium text-gray-700">Unspecified</span></p>
-            <p class="col-span-2"><i class="fa-solid fa-link text-gray-400 mr-1"></i> <a id="websiteDisplay" href="#" target="_blank" class="text-blue-500 underline truncate inline-block max-w-[200px] align-bottom">None</a></p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- ⚙️ EDIT PROFILE MODAL -->
-  <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl relative">
-      <div class="flex justify-between items-center mb-4 border-b pb-2">
-        <h3 class="text-base font-bold text-gray-800">Edit Profile</h3>
-        <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      
-      <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block font-semibold mb-1 text-gray-700">Name</label>
-          <input type="text" id="inputName" placeholder="Your Name" class="w-full border p-2.5 rounded-xl outline-none focus:border-blue-500">
-        </div>
-        <div>
-          <label class="block font-semibold mb-1 text-gray-700">Bio</label>
-          <textarea id="inputBio" rows="2" placeholder="မိမိအကြောင်း အနည်းငယ် ရေးပါ..." class="w-full border p-2.5 rounded-xl outline-none focus:border-blue-500"></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-semibold mb-1 text-gray-700">Gender</label>
-            <select id="inputGender" class="w-full border p-2.5 rounded-xl outline-none">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold mb-1 text-gray-700">Country</label>
-            <input type="text" id="inputCountry" placeholder="Myanmar" class="w-full border p-2.5 rounded-xl outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-semibold mb-1 text-gray-700">Website</label>
-          <input type="url" id="inputWebsite" placeholder="https://mywebsite.com" class="w-full border p-2.5 rounded-xl outline-none">
-        </div>
-
-        <div class="flex gap-2 pt-3">
-          <button type="button" onclick="closeProfileModal()" class="w-1/2 bg-gray-100 text-gray-600 py-2.5 rounded-xl font-bold hover:bg-gray-200">Cancel</button>
-          <button type="submit" class="w-1/2 bg-blue-600 text-white py-2.5 rounded-xl font-bold hover:bg-blue-700">Save Changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Javascript Logic (Standalone System) -->
-  <script>
-    // State Data Storage (Local state management)
-    let profileData = JSON.parse(localStorage.getItem('nextgen_profile')) || {
-      name: "NextGen User",
-      role: "admin",
-      bio: "Welcome to my NextGen Social Profile!",
-      gender: "Male",
-      country: "Myanmar",
-      website: "https://nextgen.app",
-      coverPhoto: ""
+    const newPost = {
+      id: `post_${Date.now()}`,
+      author: currentUser.name,
+      avatar: currentUser.avatar,
+      time: "ယခုလေးတင်",
+      content: newPostText,
+      likedBy: [],
+      comments: []
     };
 
-    let postsData = JSON.parse(localStorage.getItem('nextgen_posts')) || [
-      {
-        id: "post_1",
-        author: "NextGen Admin",
-        content: "Welcome to NextGen Social Platform! Phase 1 Update မှာ Navigation, Profile, Post Creation တွေ တကယ်အလုပ်လုပ်အောင် ရေးသားပေးထားပါသည်။ 🚀",
-        time: new Date().toISOString(),
-        likes: 1
-      }
-    ];
+    setPosts([newPost, ...posts]);
+    setNewPostText('');
+  };
 
-    // Initialization
-    document.addEventListener("DOMContentLoaded", () => {
-      renderProfile();
-      renderPosts();
-    });
+  // 3. Add Comment
+  const handleAddComment = (postId) => {
+    const text = commentInputs[postId];
+    if (!text || !text.trim()) return;
 
-    // 1. Page Switcher (Tab Navigation System)
-    function switchTab(tabName) {
-      document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active-tab'));
+    setPosts(prevPosts =>
+      prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [
+              ...post.comments,
+              { id: `comm_${Date.now()}`, author: currentUser.name, text: text.trim() }
+            ]
+          };
+        }
+        return post;
+      })
+    );
 
-      document.getElementById(`page-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabName}`).classList.add('active-tab');
-    }
+    setCommentInputs({ ...commentInputs, [postId]: '' });
+  };
 
-    // 2. Render Profile Details
-    function renderProfile() {
-      document.getElementById('userNameDisplay').innerText = profileData.name;
-      document.getElementById('avatarDisplay').innerText = profileData.name[0].toUpperCase();
-      document.getElementById('postAvatar').innerText = profileData.name[0].toUpperCase();
-      document.getElementById('bioDisplay').innerText = profileData.bio;
-      document.getElementById('countryDisplay').innerText = profileData.country;
-      document.getElementById('genderDisplay').innerText = profileData.gender;
-      document.getElementById('userRoleBadge').innerText = profileData.role.toUpperCase();
+  // 4. Update Profile
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    setCurrentUser({ ...editFormData });
+    setIsEditProfileOpen(false);
+  };
 
-      const webEl = document.getElementById('websiteDisplay');
-      if (profileData.website) {
-        webEl.href = profileData.website;
-        webEl.innerText = profileData.website;
-      } else {
-        webEl.innerText = "None";
-      }
-    }
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col items-center">
+      
+      {/* Header Bar */}
+      <header className="w-full max-w-2xl bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
+        <h1 className="text-xl font-bold text-indigo-600 tracking-wide">NextGen</h1>
+        
+        {/* Navigation Tabs */}
+        <nav className="flex space-x-1 sm:space-x-4">
+          <button 
+            onClick={() => setActiveTab('feed')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition ${activeTab === 'feed' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+          >
+            <Home size={16} /> Feeds
+          </button>
+          <button 
+            onClick={() => setActiveTab('explore')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition ${activeTab === 'explore' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+          >
+            <Compass size={16} /> Explore
+          </button>
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition ${activeTab === 'profile' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+          >
+            <User size={16} /> Profile
+          </button>
+        </nav>
+      </header>
 
-    // 3. Post Creation Logic
-    function createPost() {
-      const input = document.getElementById('postInput');
-      const content = input.value.trim();
-
-      if (!content) return alert("ကျေးဇူးပြု၍ စာသား အနည်းငယ် ရေးပါ။");
-
-      const newPost = {
-        id: "post_" + Date.now(),
-        author: profileData.name,
-        content: content,
-        time: new Date().toISOString(),
-        likes: 0
-      };
-
-      postsData.unshift(newPost);
-      localStorage.setItem('nextgen_posts', JSON.stringify(postsData));
-
-      input.value = "";
-      renderPosts();
-    }
-
-    // 4. Render Feed Items Logic
-    function renderPosts() {
-      const feed = document.getElementById('postsFeed');
-      feed.innerHTML = "";
-
-      if (postsData.length === 0) {
-        feed.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ပို့စ်များ မရှိသေးပါ။ အပေါ်က Box မှာ စာရေးပြီး Post တင်ကြည့်ပါ။</div>`;
-        return;
-      }
-
-      postsData.forEach(post => {
-        const postHTML = `
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs uppercase">
-                  ${post.author[0]}
+      {/* Main Content Area */}
+      <main className="w-full max-w-2xl p-4 flex-1">
+        
+        {/* TAB 1: FEEDS */}
+        {activeTab === 'feed' && (
+          <div className="space-y-4">
+            
+            {/* Post Input Box */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="flex gap-3 items-center mb-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">
+                  {currentUser.avatar}
                 </div>
-                <div>
-                  <h4 class="font-bold text-xs text-gray-800">${post.author}</h4>
-                  <p class="text-[10px] text-gray-400">${new Date(post.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                </div>
+                <input 
+                  type="text"
+                  placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?"
+                  value={newPostText}
+                  onChange={(e) => setNewPostText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreatePost(e)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
-              <button onclick="deletePost('${post.id}')" class="text-xs text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg">
-                <i class="fa-regular fa-trash-can"></i>
-              </button>
+              <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                <div className="flex gap-2 text-xs font-semibold">
+                  <button 
+                    onClick={() => setFeedType('news')}
+                    className={`px-3 py-1 rounded-full ${feedType === 'news' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                  >
+                    News Feed
+                  </button>
+                  <button 
+                    onClick={() => setFeedType('live')}
+                    className={`px-3 py-1 rounded-full ${feedType === 'live' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
+                  >
+                    Live Feed
+                  </button>
+                </div>
+                <button 
+                  onClick={handleCreatePost}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
+                >
+                  Post
+                </button>
+              </div>
             </div>
 
-            <p class="text-gray-800 my-2 text-sm leading-relaxed">${post.content}</p>
+            {/* Posts List */}
+            {posts.map(post => {
+              const isLiked = post.likedBy.includes(currentUser.id);
+              const isCommentOpen = activeCommentPostId === post.id;
 
-            <div class="flex border-t pt-2 mt-3 justify-between text-xs font-semibold text-gray-500">
-              <button onclick="likePost('${post.id}')" class="hover:text-blue-600 flex items-center gap-1">
-                <i class="fa-regular fa-thumbs-up"></i> Like (${post.likes || 0})
-              </button>
-              <button class="hover:text-blue-600 flex items-center gap-1"><i class="fa-regular fa-comment"></i> Comment</button>
-              <button onclick="sharePost('${post.id}', '${post.content.substring(0, 30)}')" class="hover:text-blue-600 flex items-center gap-1 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                <i class="fa-solid fa-share"></i> Share
-              </button>
+              return (
+                <div key={post.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+                  {/* Post Header */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">
+                      {post.avatar}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm text-slate-900">{post.author}</h4>
+                      <p className="text-xs text-slate-400">{post.time}</p>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{post.content}</p>
+
+                  {/* Actions Bar */}
+                  <div className="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
+                    <button 
+                      onClick={() => handleLikeToggle(post.id)}
+                      className={`flex items-center gap-1.5 transition ${isLiked ? 'text-red-500 font-bold' : 'hover:text-slate-800'}`}
+                    >
+                      <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
+                      Like ({post.likedBy.length})
+                    </button>
+
+                    <button 
+                      onClick={() => setActiveCommentPostId(isCommentOpen ? null : post.id)}
+                      className="flex items-center gap-1.5 hover:text-slate-800 transition"
+                    >
+                      <MessageCircle size={16} />
+                      Comment ({post.comments.length})
+                    </button>
+
+                    <button className="flex items-center gap-1.5 hover:text-slate-800 transition">
+                      <Share2 size={16} /> Share
+                    </button>
+                  </div>
+
+                  {/* Comments Section */}
+                  {isCommentOpen && (
+                    <div className="pt-3 border-t border-slate-100 space-y-3">
+                      {/* Existing Comments */}
+                      {post.comments.map(c => (
+                        <div key={c.id} className="bg-slate-50 p-2.5 rounded-lg text-xs space-y-1">
+                          <span className="font-bold text-slate-800">{c.author}: </span>
+                          <span className="text-slate-600">{c.text}</span>
+                        </div>
+                      ))}
+
+                      {/* Comment Input */}
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="ကွန်မန့်ရေးရန်..."
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                        <button 
+                          onClick={() => handleAddComment(post.id)}
+                          className="bg-indigo-600 text-white p-1.5 rounded-lg hover:bg-indigo-700 transition"
+                        >
+                          <Send size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* TAB 2: EXPLORE */}
+        {activeTab === 'explore' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+            <h2 className="text-lg font-bold text-slate-800">Explore Trends</h2>
+            <p className="text-sm text-slate-500">နောက်ဆုံးရ ထိတွေ့မှုများနှင့် Trending ခေါင်းစဉ်များကို ဒီနေရာမှာ တွေ့မြင်ရပါမည်။</p>
+            
+            <div className="space-y-3 pt-2">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-slate-400">Trending in Myanmar</p>
+                  <p className="font-semibold text-sm text-indigo-600">#NextGenPhase2</p>
+                </div>
+                <span className="text-xs text-slate-400">1.2K Posts</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-slate-400">Technology</p>
+                  <p className="font-semibold text-sm text-indigo-600">#WebDevelopment</p>
+                </div>
+                <span className="text-xs text-slate-400">850 Posts</span>
+              </div>
             </div>
           </div>
-        `;
-        feed.innerHTML += postHTML;
-      });
-    }
+        )}
 
-    // Delete & Like Actions
-    function deletePost(id) {
-      if (confirm("ဒီပို့စ်ကို ဖျက်မှာ သေချာပါသလား?")) {
-        postsData = postsData.filter(p => p.id !== id);
-        localStorage.setItem('nextgen_posts', JSON.stringify(postsData));
-        renderPosts();
-      }
-    }
+        {/* TAB 3: PROFILE */}
+        {activeTab === 'profile' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="flex gap-4 items-center">
+                <div className="w-16 h-16 rounded-full bg-indigo-600 text-white font-bold text-2xl flex items-center justify-center">
+                  {currentUser.avatar}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">{currentUser.name}</h2>
+                  <p className="text-sm text-slate-500">{currentUser.bio}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setEditFormData({ ...currentUser });
+                  setIsEditProfileOpen(true);
+                }}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition"
+              >
+                <Edit3 size={14} /> Edit Profile
+              </button>
+            </div>
 
-    function likePost(id) {
-      const post = postsData.find(p => p.id === id);
-      if (post) {
-        post.likes = (post.likes || 0) + 1;
-        localStorage.setItem('nextgen_posts', JSON.stringify(postsData));
-        renderPosts();
-      }
-    }
+            <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100">
+              <div>
+                <span className="text-slate-400">Gender</span>
+                <p className="font-semibold text-slate-700 mt-0.5">{currentUser.gender}</p>
+              </div>
+              <div>
+                <span className="text-slate-400">Country</span>
+                <p className="font-semibold text-slate-700 mt-0.5 flex items-center gap-1">
+                  <MapPin size={12} /> {currentUser.country}
+                </p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-slate-400">Website</span>
+                <p className="font-semibold text-indigo-600 mt-0.5 flex items-center gap-1">
+                  <Globe size={12} /> <a href={currentUser.website} target="_blank" rel="noreferrer">{currentUser.website}</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
-    // Real Share Function
-    async function sharePost(id, title) {
-      const shareUrl = `${window.location.origin}?post=${id}`;
-      if (navigator.share) {
-        try {
-          await navigator.share({ title: 'NextGen Post', text: title, url: shareUrl });
-        } catch (e) {}
-      } else {
-        navigator.clipboard.writeText(shareUrl);
-        alert("📌 Post Link ကို Copy ကူးပြီးပါပြီ!");
-      }
-    }
+      </main>
 
-    // Modal Control & Save
-    function openProfileModal() {
-      document.getElementById('inputName').value = profileData.name;
-      document.getElementById('inputBio').value = profileData.bio;
-      document.getElementById('inputGender').value = profileData.gender;
-      document.getElementById('inputCountry').value = profileData.country;
-      document.getElementById('inputWebsite').value = profileData.website;
-      document.getElementById('profileModal').classList.remove('hidden');
-    }
+      {/* EDIT PROFILE MODAL */}
+      {isEditProfileOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-slate-800">Edit Profile</h3>
+              <button onClick={() => setIsEditProfileOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={18} />
+              </button>
+            </div>
 
-    function closeProfileModal() {
-      document.getElementById('profileModal').classList.add('hidden');
-    }
+            <form onSubmit={handleSaveProfile} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Name</label>
+                <input 
+                  type="text" 
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
 
-    function saveProfile(e) {
-      e.preventDefault();
-      profileData.name = document.getElementById('inputName').value || profileData.name;
-      profileData.bio = document.getElementById('inputBio').value;
-      profileData.gender = document.getElementById('inputGender').value;
-      profileData.country = document.getElementById('inputCountry').value;
-      profileData.website = document.getElementById('inputWebsite').value;
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Bio</label>
+                <textarea 
+                  rows={2}
+                  value={editFormData.bio}
+                  onChange={(e) => setEditFormData({ ...editFormData, bio: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
 
-      localStorage.setItem('nextgen_profile', JSON.stringify(profileData));
-      renderProfile();
-      closeProfileModal();
-      alert("✅ Profile ပြင်ဆင်မှု သိမ်းဆည်းပြီးပါပြီ!");
-    }
-  </script>
-</body>
-  </html>
-          
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 font-medium mb-1">Gender</label>
+                  <select 
+                    value={editFormData.gender}
+                    onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                    className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none bg-white"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-600 font-medium mb-1">Country</label>
+                  <input 
+                    type="text" 
+                    value={editFormData.country}
+                    onChange={(e) => setEditFormData({ ...editFormData, country: e.target.value })}
+                    className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Website</label>
+                <input 
+                  type="text" 
+                  value={editFormData.website}
+                  onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button 
+                  type="button"
+                  onClick={() => setIsEditProfileOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-medium"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+                  
