@@ -28,6 +28,9 @@
         const { useState, useEffect } = React;
 
         function App() {
+            // Authentication State (အကောင့်ဝင်/မဝင် စစ်ဆေးသည့်စနစ်)
+            const [isLoggedIn, setIsLoggedIn] = useState(true);
+
             // User State
             const [currentUser, setCurrentUser] = useState({
                 id: "user_001",
@@ -42,34 +45,40 @@
             // Navigation & Feed States
             const [activeTab, setActiveTab] = useState('feed'); 
             const [feedType, setFeedType] = useState('news');
+            const [selectedHashtag, setSelectedHashtag] = useState(null);
             
-            // UI States
+            // UI & Form States
             const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
             const [newPostText, setNewPostText] = useState('');
+            const [mediaFile, setMediaFile] = useState(null); // Photo / Video Media
+            const [mediaType, setMediaType] = useState(null); // 'image' or 'video'
+            
             const [commentInputs, setCommentInputs] = useState({});
             const [activeCommentPostId, setActiveCommentPostId] = useState(null);
             const [editFormData, setEditFormData] = useState({ ...currentUser });
             const [toastMessage, setToastMessage] = useState('');
 
-            // Clean Default Posts (စမ်းသပ်စာသားများ ဖယ်ရှားထားသည်)
+            // Clean Default Posts
             const [posts, setPosts] = useState([
                 {
                     id: "post_welcome",
                     author: "NextGen Team",
                     avatar: "N",
                     time: "ယနေ့",
-                    content: "Welcome to NextGen Social! မင်္ဂလာပါ၊ သင်၏ စာများကို စတင် မျှဝေနိုင်ပါပြီ။ 🚀",
+                    content: "Welcome to NextGen Social! မင်္ဂလာပါ၊ သင်၏ စာများကို စတင် မျှဝေနိုင်ပါပြီ။ #NextGenSocial 🚀",
+                    mediaUrl: null,
+                    mediaType: null,
                     likedBy: [], 
                     comments: []
                 }
             ]);
 
-            // Re-render Icons
+            // Re-render Lucide Icons
             useEffect(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
-            }, [activeTab, posts, isEditProfileOpen, activeCommentPostId]);
+            }, [activeTab, posts, isEditProfileOpen, activeCommentPostId, isLoggedIn, mediaFile]);
 
             // Toast Alert Auto Hide
             const showToast = (msg) => {
@@ -77,8 +86,26 @@
                 setTimeout(() => setToastMessage(''), 3000);
             };
 
-            // 1. Like / Unlike Toggle
+            // Handle Media Selection (Photo / Video)
+            const handleMediaChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    setMediaFile(url);
+                    if (file.type.startsWith('video/')) {
+                        setMediaType('video');
+                    } else {
+                        setMediaType('image');
+                    }
+                }
+            };
+
+            // 1. Like / Unlike Toggle (Auth Guard)
             const handleLikeToggle = (postId) => {
+                if (!isLoggedIn) {
+                    showToast("Like ပေးရန်အတွက် အကောင့်ဝင်ရန် လိုအပ်ပါသည်။");
+                    return;
+                }
                 setPosts(prevPosts =>
                     prevPosts.map(post => {
                         if (post.id === postId) {
@@ -93,10 +120,14 @@
                 );
             };
 
-            // 2. Add New Post
+            // 2. Add New Post (With Photo/Video & Auth Guard)
             const handleCreatePost = (e) => {
                 if (e) e.preventDefault();
-                if (!newPostText.trim()) return;
+                if (!isLoggedIn) {
+                    showToast("Post တင်ရန်အတွက် အကောင့်ဝင်ရန် လိုအပ်ပါသည်။");
+                    return;
+                }
+                if (!newPostText.trim() && !mediaFile) return;
 
                 const newPost = {
                     id: `post_${Date.now()}`,
@@ -104,16 +135,25 @@
                     avatar: currentUser.avatar,
                     time: "ယခုလေးတင်",
                     content: newPostText,
+                    mediaUrl: mediaFile,
+                    mediaType: mediaType,
                     likedBy: [],
                     comments: []
                 };
 
                 setPosts([newPost, ...posts]);
                 setNewPostText('');
+                setMediaFile(null);
+                setMediaType(null);
+                showToast("Post တင်ပြီးပါပြီ။");
             };
 
-            // 3. Add Comment
+            // 3. Add Comment (Auth Guard)
             const handleAddComment = (postId) => {
+                if (!isLoggedIn) {
+                    showToast("Comment ရေးရန်အတွက် အကောင့်ဝင်ရန် လိုအပ်ပါသည်။");
+                    return;
+                }
                 const text = commentInputs[postId];
                 if (!text || !text.trim()) return;
 
@@ -157,6 +197,11 @@
                 showToast("Profile ပြင်ဆင်မှု အောင်မြင်ပါသည်။");
             };
 
+            // Filter posts for Explore/Feed
+            const displayedPosts = selectedHashtag 
+                ? posts.filter(p => p.content.includes(selectedHashtag))
+                : posts;
+
             return (
                 <div className="flex flex-col items-center min-h-screen relative">
                     
@@ -169,10 +214,10 @@
 
                     {/* Header */}
                     <header className="w-full max-w-2xl bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
-                        <h1 className="text-xl font-bold text-indigo-600 tracking-wide">NextGen</h1>
+                        <h1 className="text-xl font-bold text-indigo-600 tracking-wide cursor-pointer" onClick={() => { setSelectedHashtag(null); setActiveTab('feed'); }}>NextGen</h1>
                         <nav className="flex space-x-1 sm:space-x-4">
                             <button 
-                                onClick={() => setActiveTab('feed')}
+                                onClick={() => { setSelectedHashtag(null); setActiveTab('feed'); }}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition ${activeTab === 'feed' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
                             >
                                 <i data-lucide="home" className="w-4 h-4"></i> Feeds
@@ -198,38 +243,76 @@
                         {/* FEEDS TAB */}
                         {activeTab === 'feed' && (
                             <div className="space-y-4">
+                                
+                                {selectedHashtag && (
+                                    <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-xl flex justify-between items-center text-xs text-indigo-700">
+                                        <span>Filtering by: <b>{selectedHashtag}</b></span>
+                                        <button onClick={() => setSelectedHashtag(null)} className="font-bold underline">Show All</button>
+                                    </div>
+                                )}
+
+                                {/* Post Creation Box */}
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                                     <div className="flex gap-3 items-center mb-3">
                                         <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">
-                                            {currentUser.avatar}
+                                            {isLoggedIn ? currentUser.avatar : "?"}
                                         </div>
                                         <input 
                                             type="text"
-                                            placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?"
+                                            disabled={!isLoggedIn}
+                                            placeholder={isLoggedIn ? "ဘာတွေ စဉ်းစားနေလဲ... ?" : "စာတင်ရန် ပထမဦးစွာ အကောင့်ဝင်ပါ..."}
                                             value={newPostText}
                                             onChange={(e) => setNewPostText(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleCreatePost(e)}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
                                         />
                                     </div>
+
+                                    {/* Preview Uploaded Media */}
+                                    {mediaFile && (
+                                        <div className="relative mb-3 rounded-lg overflow-hidden border border-slate-200 max-h-60 bg-black flex items-center justify-center">
+                                            {mediaType === 'image' ? (
+                                                <img src={mediaFile} alt="Upload preview" className="max-h-60 object-contain" />
+                                            ) : (
+                                                <video src={mediaFile} controls className="max-h-60" />
+                                            )}
+                                            <button 
+                                                onClick={() => { setMediaFile(null); setMediaType(null); }}
+                                                className="absolute top-2 right-2 bg-slate-900/80 text-white p-1 rounded-full hover:bg-black"
+                                            >
+                                                <i data-lucide="x" className="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                                        <div className="flex gap-2 text-xs font-semibold">
+                                        <div className="flex gap-3 items-center text-xs font-semibold">
                                             <button 
                                                 onClick={() => setFeedType('news')}
                                                 className={`px-3 py-1 rounded-full ${feedType === 'news' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
                                             >
                                                 News Feed
                                             </button>
-                                            <button 
-                                                onClick={() => setFeedType('live')}
-                                                className={`px-3 py-1 rounded-full ${feedType === 'live' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}
-                                            >
-                                                Live Feed
-                                            </button>
+
+                                            {/* Photo/Video Attachment Button */}
+                                            {isLoggedIn && (
+                                                <label className="flex items-center gap-1 text-slate-500 hover:text-indigo-600 cursor-pointer bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+                                                    <i data-lucide="image" className="w-4 h-4 text-emerald-500"></i>
+                                                    <span>Photo/Video</span>
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*,video/*" 
+                                                        onChange={handleMediaChange}
+                                                        className="hidden" 
+                                                    />
+                                                </label>
+                                            )}
                                         </div>
+
                                         <button 
                                             onClick={handleCreatePost}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
+                                            disabled={!isLoggedIn}
+                                            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
                                         >
                                             Post
                                         </button>
@@ -237,7 +320,7 @@
                                 </div>
 
                                 {/* Posts List */}
-                                {posts.map(post => {
+                                {displayedPosts.map(post => {
                                     const isLiked = post.likedBy.includes(currentUser.id);
                                     const isCommentOpen = activeCommentPostId === post.id;
 
@@ -255,7 +338,18 @@
 
                                             <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{post.content}</p>
 
-                                            <div className="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
+                                            {/* Media Rendering */}
+                                            {post.mediaUrl && (
+                                                <div className="rounded-lg overflow-hidden border border-slate-100 max-h-80 bg-black flex items-center justify-center">
+                                                    {post.mediaType === 'image' ? (
+                                                        <img src={post.mediaUrl} alt="Post content" className="w-full object-cover max-h-80" />
+                                                    ) : (
+                                                        <video src={post.mediaUrl} controls className="w-full max-h-80" />
+                                                    )}
+                                                </div>
+                                            )}
+
+                                             <div className="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
                                                 <button 
                                                     onClick={() => handleLikeToggle(post.id)}
                                                     className={`flex items-center gap-1.5 transition ${isLiked ? 'text-red-500 font-bold' : 'hover:text-slate-800'}`}
@@ -293,15 +387,17 @@
                                                     <div className="flex gap-2">
                                                         <input 
                                                             type="text" 
-                                                            placeholder="ကွန်မန့်ရေးရန်..."
+                                                            disabled={!isLoggedIn}
+                                                            placeholder={isLoggedIn ? "ကွန်မန့်ရေးရန်..." : "ကွန်မန့်ရေးရန် အကောင့်ဝင်ပါ..."}
                                                             value={commentInputs[post.id] || ''}
                                                             onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
                                                             onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
-                                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-100"
                                                         />
                                                         <button 
                                                             onClick={() => handleAddComment(post.id)}
-                                                            className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center"
+                                                            disabled={!isLoggedIn}
+                                                            className="bg-indigo-600 disabled:bg-slate-300 text-white p-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center"
                                                         >
                                                             <i data-lucide="send" className="w-3.5 h-3.5"></i>
                                                         </button>
@@ -318,17 +414,23 @@
                         {activeTab === 'explore' && (
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                                 <h2 className="text-lg font-bold text-slate-800">Explore Trends</h2>
-                                <p className="text-xs text-slate-500">နောက်ဆုံးရ Trending ခေါင်းစဉ်များ</p>
+                                <p className="text-xs text-slate-500">Trending ခေါင်းစဉ်များကို နှိပ်၍ သီးသန့် စာများကို ရှာဖွေနိုင်ပါသည်</p>
                                 
                                 <div className="space-y-3 pt-2">
-                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition">
+                                    <div 
+                                        onClick={() => { setSelectedHashtag('#NextGenSocial'); setActiveTab('feed'); }}
+                                        className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition"
+                                    >
                                         <div>
                                             <p className="text-xs text-slate-400">Trending in Myanmar</p>
                                             <p className="font-semibold text-sm text-indigo-600">#NextGenSocial</p>
                                         </div>
                                         <span className="text-xs text-slate-400">1.2K Posts</span>
                                     </div>
-                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition">
+                                    <div 
+                                        onClick={() => { setSelectedHashtag('#WebDevelopment'); setActiveTab('feed'); }}
+                                        className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition"
+                                    >
                                         <div>
                                             <p className="text-xs text-slate-400">Technology</p>
                                             <p className="font-semibold text-sm text-indigo-600">#WebDevelopment</p>
@@ -345,42 +447,62 @@
                                 <div className="flex justify-between items-start">
                                     <div className="flex gap-4 items-center">
                                         <div className="w-16 h-16 rounded-full bg-indigo-600 text-white font-bold text-2xl flex items-center justify-center">
-                                            {currentUser.avatar}
+                                            {isLoggedIn ? currentUser.avatar : "?"}
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-slate-900">{currentUser.name}</h2>
-                                            <p className="text-xs text-slate-500 mt-1">{currentUser.bio}</p>
+                                            <h2 className="text-xl font-bold text-slate-900">{isLoggedIn ? currentUser.name : "Guest User"}</h2>
+                                            <p className="text-xs text-slate-500 mt-1">{isLoggedIn ? currentUser.bio : "ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ"}</p>
                                         </div>
                                     </div>
-                                    <button 
-                                        onClick={() => {
-                                            setEditFormData({ ...currentUser });
-                                            setIsEditProfileOpen(true);
-                                        }}
-                                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition"
-                                    >
-                                        <i data-lucide="edit-3" className="w-3.5 h-3.5"></i> Edit Profile
-                                    </button>
+
+                                    {/* Login Status Switcher */}
+                                    <div className="flex flex-col gap-2">
+                                        {isLoggedIn ? (
+                                            <>
+                                                <button 
+                                                    onClick={() => { setEditFormData({ ...currentUser }); setIsEditProfileOpen(true); }}
+                                                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"
+                                                >
+                                                    <i data-lucide="edit-3" className="w-3.5 h-3.5"></i> Edit Profile
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setIsLoggedIn(false); showToast("Logout လုပ်လိုက်ပါပြီ။"); }}
+                                                    className="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-1.5 rounded-lg transition text-center"
+                                                >
+                                                    Logout
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button 
+                                                onClick={() => { setIsLoggedIn(true); showToast("အကောင့်ဝင်ရောက်ပြီးပါပြီ။"); }}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
+                                            >
+                                                Log In
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100">
-                                    <div>
-                                        <span className="text-slate-400">Gender</span>
-                                        <p className="font-semibold text-slate-700 mt-0.5">{currentUser.gender}</p>
+                                {isLoggedIn && (
+                                    <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100">
+                                        <div>
+                                            <span className="text-slate-400">Gender</span>
+                                            <p className="font-semibold text-slate-700 mt-0.5">{currentUser.gender}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-slate-400">Country</span>
+                                            <p className="font-semibold text-slate-700 mt-0.5 flex items-center gap-1">
+                                                <i data-lucide="map-pin" className="w-3 h-3"></i> {currentUser.country}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <span className="text-slate-400">Website</span>
+                                            <p className="font-semibold text-indigo-600 mt-0.5 flex items-center gap-1">
+                                                <i data-lucide="globe" className="w-3 h-3"></i> <a href={currentUser.website} target="_blank" rel="noreferrer">{currentUser.website}</a>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <span className="text-slate-400">Country</span>
-                                        <p className="font-semibold text-slate-700 mt-0.5 flex items-center gap-1">
-                                            <i data-lucide="map-pin" className="w-3 h-3"></i> {currentUser.country}
-                                        </p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="text-slate-400">Website</span>
-                                        <p className="font-semibold text-indigo-600 mt-0.5 flex items-center gap-1">
-                                            <i data-lucide="globe" className="w-3 h-3"></i> <a href={currentUser.website} target="_blank" rel="noreferrer">{currentUser.website}</a>
-                                        </p>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         )}
                     </main>
