@@ -4,12 +4,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGen App v3</title>
-    <link rel="stylesheet" href="style.css">
     
     <!-- 🌐 Firebase SDK Core & Modules -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- 🎨 CSS Styles (ဒီနေရာတွင် စုစည်းထားသည်) -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+
+        .content-wrapper {
+            padding-bottom: 80px;
+        }
+
+        .page-section {
+            display: block;
+            padding: 15px;
+        }
+
+        .page-section.hidden,
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header & Nav */
+        .top-bar {
+            padding: 12px 15px;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        #app-logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #38bdf8;
+            user-select: none;
+        }
+
+        .search-btn {
+            cursor: pointer;
+            padding: 6px 12px;
+            background: #1e293b;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .search-text {
+            font-size: 12px;
+            color: #94a3b8;
+            display: inline-block;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #1e293b;
+            z-index: 90;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: #38bdf8;
+            background: #1e293b;
+        }
+
+        /* Feed & Cards */
+        .feed-card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
+        }
+
+        .post-box {
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 16px;
+            display: flex;
+            background: #1e293b;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Inputs & Buttons */
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .select-field {
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+            padding: 5px;
+            border-radius: 6px;
+        }
+
+        .btn-primary {
+            background: #38bdf8;
+            color: black;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        /* Modals & Overlays */
+        .comment-keyboard-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            padding: 15px;
+            border-top: 1px solid #334155;
+            border-radius: 16px 16px 0 0;
+            z-index: 200;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+        }
+
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Helper Utilities */
+        .avatar-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8; }
+        .avatar-large { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #38bdf8; cursor: pointer; }
+        .avatar-edit-badge { position: absolute; bottom: 0; right: 0; background: #38bdf8; color: black; padding: 6px; border-radius: 50%; cursor: pointer; font-size: 12px; }
+        .title-blue { color: #38bdf8; }
+        .title-yellow { color: #eab308; }
+        .label-blue { color: #38bdf8; font-size: 14px; font-weight: bold; }
+        .sub-label { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px; }
+        .font-small { font-size: 13px; }
+        .mb-12 { margin-bottom: 12px; }
+        .mb-15 { margin-bottom: 15px; }
+        .text-center { text-align: center; }
+        .section-title { text-align: center; margin-bottom: 15px; }
+        .info-box { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #233554; margin-bottom: 12px; }
+        .post-action-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px; }
+        .upload-area { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px dashed #334155; display: flex; flex-direction: column; gap: 8px; }
+    </style>
 </head>
 <body>
 
@@ -171,7 +370,600 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- ⚡ JavaScript Logic (ဒီနေရာတွင် စုစည်းထားသည်) -->
+    <script>
+        // 🌐 Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
+          authDomain: "my-social-app-13d41.firebaseapp.com",
+          databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
+          projectId: "my-social-app-13d41",
+          storageBucket: "my-social-app-13d41.firebasestorage.app",
+          messagingSenderId: "929198714349",
+          appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
+          measurementId: "G-2QDS45V6VL"
+        };
+
+        const WAVEPAY_PHONE = "09663711680"; 
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); 
+        const auth = firebase.auth();
+
+        let currentUser = {
+            isLoggedIn: false,
+            username: "ဧည့်သည် (Guest)",
+            email: "",
+            avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            isAdmin: false
+        };
+
+        const adminPIN = "4784";
+        let activeCommentPostId = null;
+        let activeCommentType = 'feed';
+        let avatarClickCount = 0;
+
+        function adjustUploadUI() {
+            let type = document.getElementById('post-type').value;
+            let photoArea = document.getElementById('photo-input-container');
+            let audioArea = document.getElementById('audio-input-container');
+            
+            if (type === 'audio') {
+                photoArea.classList.add('hidden');
+                audioArea.classList.remove('hidden');
+            } else if (type === 'tiktok_style') {
+                photoArea.classList.remove('hidden');
+                audioArea.classList.remove('hidden');
+            } else {
+                photoArea.classList.remove('hidden');
+                audioArea.classList.add('hidden');
+            }
+        }
+
+        function switchPage(pageId, buttonElement) {
+            try {
+                document.querySelectorAll('.page-section').forEach(page => page.classList.add('hidden'));
+                const targetPage = document.getElementById(`${pageId}-page`);
+                if (targetPage) targetPage.classList.remove('hidden');
+
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                if (buttonElement) buttonElement.classList.add('active');
+                
+                closeCommentKeyboard();
+            } catch (e) {
+                console.error("Navigation Error: ", e);
+            }
+        }
+
+        function listenToFirestore() {
+            db.collection('posts').orderBy('id', 'desc').onSnapshot((snapshot) => {
+                let samplePosts = [];
+                snapshot.forEach((doc) => {
+                    let post = doc.data();
+                    post.firebaseKey = doc.id; 
+                    samplePosts.push(post);
+                });
+                renderSection('feed-container', samplePosts, 'feed');
+            });
+
+            db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
+                let sampleVideos = [];
+                snapshot.forEach((doc) => {
+                    let video = doc.data();
+                    video.firebaseKey = doc.id;
+                    sampleVideos.push(video);
+                });
+                renderSection('video-container', sampleVideos, 'video');
+            });
+
+            db.collection('ads').orderBy('id', 'desc').onSnapshot((snapshot) => {
+                let adsList = [];
+                snapshot.forEach((doc) => {
+                    let ad = doc.data();
+                    ad.firebaseKey = doc.id;
+                    adsList.push(ad);
+                });
+                renderSection('ads-container', adsList, 'ads');
+                renderHomeAdBanner(adsList);
+            });
+        }
+
+        function getYouTubeEmbedUrl(url) {
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            if (match && match[2].length === 11) {
+                return `https://www.youtube.com/embed/${match[2]}`;
+            }
+            return url;
+        }
+
+        async function compressImageSafe(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const MAX_WIDTH = 350; 
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.25));
+                        } catch (err) { reject(err); }
+                    };
+                };
+            });
+        }
+
+        async function processAudioFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
+        async function uploadProfilePicture() {
+            try {
+                let fileInput = document.getElementById('avatar-upload');
+                let file = fileInput.files[0];
+                if (!file) return;
+
+                alert("ဖိုင်ချုံ့နေပါသည်...");
+                let compressedAvatar = await compressImageSafe(file);
+                
+                currentUser.avatar = compressedAvatar;
+                localStorage.setItem('nextgen_avatar', compressedAvatar);
+                
+                document.getElementById('profile-avatar').src = compressedAvatar;
+                document.getElementById('top-bar-avatar').src = compressedAvatar;
+                alert("📸 ပရိုဖိုင်ဓာတ်ပုံကို ရေရှည်မှတ်ဉာဏ်ထဲသို့ မှတ်တမ်းတင်ပြီးပါပြီ။");
+            } catch (error) {
+                alert("❌ ဓာတ်ပုံတင်ရန် အဆင်မပြေပါ။");
+            }
+        }
+
+        async function createNewPost() {
+            let textInput = document.getElementById('post-text');
+            let mediaInput = document.getElementById('post-media-url');
+            let photoInput = document.getElementById('post-photo-input');
+            let audioInput = document.getElementById('post-audio-input');
+            let typeInput = document.getElementById('post-type');
+
+            let text = textInput.value.trim();
+            let mediaUrl = mediaInput.value.trim();
+            let postType = typeInput.value;
+            
+            let photoFile = photoInput.files[0];
+            let audioFile = audioInput.files[0];
+
+            if (text === "" && !photoFile && !audioFile && mediaUrl === "") {
+                alert("မျှဝေချင်တဲ့ အကြောင်းအရာတစ်ခုခု ဖြည့်စွက်ပေးပါဗျာ။");
+                return;
+            }
+
+            if (postType === 'ad_post' && !currentUser.isAdmin) {
+                alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
+                return;
+            }
+
+            let isYoutube = false;
+            let isAudio = postType === 'audio';
+            let isTikTok = postType === 'tiktok_style';
+            let isTikTokLink = false;
+            let secondaryAudioUrl = "";
+
+            if (mediaUrl !== "" && (mediaUrl.includes("tiktok.com") || mediaUrl.includes("vt.tiktok"))) {
+                isTikTokLink = true;
+            }
+
+            if (mediaUrl !== "" && (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))) {
+                mediaUrl = getYouTubeEmbedUrl(mediaUrl);
+                isYoutube = true;
+                if(postType !== 'ad_post') postType = 'video'; 
+            }
+
+            if (photoFile) {
+                alert("ဖိုင်ချုံ့နေပါသည်...");
+                mediaUrl = await compressImageSafe(photoFile);
+                if(!isTikTok && postType !== 'ad_post') postType = 'image';
+            }
+
+            if (audioFile) {
+                alert("🎵 အသံဖိုင်ဒေတာကို ထည့်သွင်းနေပါသည်...");
+                let processedAudio = await processAudioFile(audioFile);
+                if (isTikTok) {
+                    secondaryAudioUrl = processedAudio; 
+                } else {
+                    mediaUrl = processedAudio;
+                    isAudio = true;
+                }
+            } else if (isTikTok && mediaUrl !== "" && !isYoutube) {
+                secondaryAudioUrl = mediaUrl; 
+            }
+
+            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile);
+            
+            let newPostObj = {
+                id: Date.now(),
+                author: currentUser.username,
+                content: text,
+                mediaUrl: mediaUrl,
+                audioUrl: secondaryAudioUrl, 
+                isImage: isImageFlag,
+                isAudio: isAudio,
+                isTikTok: isTikTok,
+                isTikTokLink: isTikTokLink,
+                isYoutube: isYoutube,
+                likes: 0,
+                shares: 0,
+                comments: []
+            };
+
+            let targetCollection = 'posts';
+            if (postType === 'video') targetCollection = 'videos';
+            if (postType === 'ad_post') targetCollection = 'ads';
+
+            db.collection(targetCollection).add(newPostObj)
+                .then(() => {
+                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ R Lay!");
+                    resetPostInputs();
+                })
+                .catch(err => alert("❌ Database Error: " + err.message));
+        }
+
+        function resetPostInputs() {
+            document.getElementById('post-text').value = "";
+            document.getElementById('post-media-url').value = "";
+            document.getElementById('post-photo-input').value = "";
+            document.getElementById('post-audio-input').value = "";
+        }
+
+        function handleSecureLogin() {
+            let userIn = document.getElementById('login-username');
+            let emailIn = document.getElementById('login-google-email');
+            let passIn = document.getElementById('login-password');
+
+            let uName = userIn.value.trim();
+            let email = emailIn.value.trim();
+            let pWord = passIn.value.trim();
+
+            if(uName === "" || email === "" || pWord === "") {
+                alert("အချက်အလက်အားလုံးကို ဖြည့်စွက်ပေးပါ။");
+                return;
+            }
+
+            auth.signInWithEmailAndPassword(email, pWord)
+                .then(() => { successLoginSetup(uName, email); })
+                .catch((error) => {
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+                        auth.createUserWithEmailAndPassword(email, pWord)
+                            .then(() => { successLoginSetup(uName, email); });
+                    } else {
+                        alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
+                    }
+                });
+        }
+
+        function successLoginSetup(username, email) {
+            currentUser.isLoggedIn = true;
+            currentUser.username = username;
+            currentUser.email = email;
+
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('profile-container').classList.remove('hidden');
+            document.getElementById('profile-name').innerText = currentUser.username;
+            document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
+            alert(`ကြိုဆိုပါတယ် ${currentUser.username}`);
+        }
+
+        function handleLogout() {
+            auth.signOut().then(() => {
+                currentUser.isLoggedIn = false;
+                currentUser.username = "ဧည့်သည် (Guest)";
+                currentUser.email = "";
+                currentUser.isAdmin = false;
+                
+                document.getElementById('admin-indicator').classList.add('hidden');
+                document.getElementById('profile-container').classList.add('hidden');
+                document.getElementById('login-container').classList.remove('hidden');
+                alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
+                listenToFirestore(); 
+            });
+        }
+
+        function triggerAdminSecret() {
+            avatarClickCount++;
+            if (avatarClickCount >= 5) {
+                avatarClickCount = 0;
+                let enteredPIN = prompt("Rlay Exclusive Admin PIN နံပါတ်ကို ရိုက်ထည့်ပါ:");
+                if (enteredPIN === adminPIN) {
+                    currentUser.isAdmin = true;
+                    document.getElementById('admin-indicator').classList.remove('hidden');
+                    alert("👑 Access Granted! ယခု ပို့စ်များကို တိုက်ရိုက်ဖျက်ဆီးနိုင်ပါပြီ။");
+                    listenToFirestore(); 
+                } else if (enteredPIN !== null) {
+                    alert("❌ PIN နံပါတ် မှားယွင်းနေပါသည်။");
+                }
+            }
+        }
+        function deletePostPermanently(firebaseKey, type) {
+            if (!currentUser.isAdmin) return;
+            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
+            if (!confirmDelete) return;
+
+            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
+            db.collection(targetCollection).doc(firebaseKey).delete()
+                .then(() => { alert("🗑️ ပို့စ်အား ဖျက်ဆီးပြီးပါပြီ။"); })
+                .catch(err => alert("❌ Error: " + err.message));
+        }
+
+        function toggleLike(firebaseKey, type) {
+            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
+            let docRef = db.collection(targetCollection).doc(firebaseKey);
+            docRef.get().then((doc) => {
+                if (doc.exists) {
+                    docRef.update({ likes: (doc.data().likes || 0) + 1 });
+                }
+            });
+        }
+
+        function openCommentKeyboard(firebaseKey, type) {
+            activeCommentPostId = firebaseKey;
+            activeCommentType = type;
+            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
+            
+            db.collection(targetCollection).doc(firebaseKey).onSnapshot((doc) => {
+                if (!doc.exists) return;
+                let item = doc.data();
+                let listContainer = document.getElementById('keyboard-comments-list');
+                listContainer.innerHTML = "";
+
+                if (item.comments && Array.isArray(item.comments)) {
+                    item.comments.forEach(comment => {
+                        let commentDiv = document.createElement('div');
+                        commentDiv.style.background = "#0f172a";
+                        commentDiv.style.padding = "8px 12px";
+                        commentDiv.style.borderRadius = "8px";
+                        commentDiv.style.marginBottom = "6px";
+                        commentDiv.innerHTML = `<strong style="color: #38bdf8;">${comment.user}</strong><p style="margin:4px 0 0 0; color:#cbd5e1;">${comment.text}</p>`;
+                        listContainer.appendChild(commentDiv);
+                    });
+                }
+                document.getElementById('keyboard-comment-box').classList.remove('hidden');
+            });
+        }
+
+        function submitKeyboardComment() {
+            let input = document.getElementById('keyboard-comment-input');
+            let text = input.value.trim();
+            if (text === "" || activeCommentPostId === null) return;
+
+            let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
+            db.collection(targetCollection).doc(activeCommentPostId).update({
+                comments: firebase.firestore.FieldValue.arrayUnion({
+                    id: Date.now(),
+                    user: currentUser.username,
+                    text: text
+                })
+            }).then(() => { input.value = ""; });
+        }
+
+        function renderHomeAdBanner(adsList) {
+            let bannerContainer = document.getElementById('home-ad-banner');
+            if (!bannerContainer || adsList.length === 0) return;
+            bannerContainer.innerHTML = "";
+
+            let premiumAd = adsList[0];
+            let adMediaHTML = "";
+            
+            if(premiumAd.mediaUrl && premiumAd.mediaUrl !== "") {
+                if(premiumAd.isYoutube) {
+                    adMediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:8px;">
+                                    <iframe src="${premiumAd.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
+                                   </div>`;
+                } else if (premiumAd.isTikTokLink) {
+                    adMediaHTML = `<div style="margin-top:10px; text-align:center;">
+                                    <a href="${premiumAd.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
+                                   </div>`;
+                } else {
+                    adMediaHTML = `<img src="${premiumAd.mediaUrl}" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-top:8px;">`;
+                }
+            }
+
+            if (premiumAd.isTikTok && premiumAd.audioUrl) {
+                adMediaHTML += `<div style="background:#0f172a; padding:8px; border-radius:8px; margin-top:8px; border:1px dashed #eab308; text-align:center;">
+                                <audio controls style="width:100%; height:32px;"><source src="${premiumAd.audioUrl}" type="audio/mp3"></audio>
+                              </div>`;
+            }
+
+            let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${premiumAd.firebaseKey}', 'ads')" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; float:right;">🗑️ ဖျက်မည်</button>` : "";
+
+            bannerContainer.innerHTML = `
+                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #eab308; padding: 12px; border-radius: 14px; position: relative;">
+                    ${deleteBtnHTML}
+                    <span style="background:#eab308; color:black; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">🔥 SPONSOR AD</span>
+                    <strong style="color:#eab308; display:block; font-size:14px;">📢 ${premiumAd.author}</strong>
+                    <p style="margin:6px 0 0 0; font-size:13px; color:white; white-space:pre-wrap;">${premiumAd.content}</p>
+                    ${adMediaHTML}
+                </div>
+            `;
+        }
+
+        function renderSection(containerId, dataList, type) {
+            let container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = "";
+
+            if(dataList.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ပို့စ်များ မရှိသေးပါဗျာ။</p>`;
+                return;
+            }
+
+            dataList.forEach(item => {
+                let card = document.createElement('div');
+                card.className = "feed-card";
+                
+                let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${item.firebaseKey}', '${type}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; margin-left:10px;">🗑️ ဖြတ်ပစ်မည်</button>` : "";
+                let mediaHTML = "";
+                
+                if (item.mediaUrl && item.mediaUrl !== "") {
+                    if (item.isYoutube) {
+                        mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:10px;">
+                                        <iframe src="${item.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
+                                     </div>`;
+                    } else if (item.isTikTokLink) {
+                        mediaHTML = `<div style="margin-top:10px; text-align:center;">
+                                        <a href="${item.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
+                                     </div>`;
+                    } else if (item.isImage) {
+                        mediaHTML = `<img src="${item.mediaUrl}" style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: cover;">`;
+                    } else if (item.isAudio) {
+                        mediaHTML = `<div style="background:#0f172a; padding:12px; border-radius:8px; margin-top:10px; text-align:center;">
+                                        <audio controls style="width:100%;"><source src="${item.mediaUrl}" type="audio/mp3"></audio>
+                                     </div>`;
+                    }
+                }
+                
+                if (item.isTikTok && item.audioUrl) {
+                    mediaHTML += `<div style="background:#0f172a; padding:10px; border-radius:8px; margin-top:8px; border:1px dashed #38bdf8; text-align:center;">
+                                    <span style="font-size:11px; color:#38bdf8; display:block; margin-bottom:5px;">🎵 Background TikTok Music Track</span>
+                                    <audio controls style="width:100%; height:32px;"><source src="${item.audioUrl}" type="audio/mp3"></audio>
+                                  </div>`;
+                }
+                
+                let commentCount = item.comments ? item.comments.length : 0;
+                let badge = type === 'ads' ? `<span style="color:#eab308; font-size:12px;">[📢 Ad]</span> ` : "";
+                
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                        <div style="flex:1;"><strong style="color:#38bdf8;">👤 ${badge}${item.author}</strong></div>
+                        <div>${deleteBtnHTML}</div>
+                    </div>
+                    <p style="margin-top: 8px; line-height:1.5; white-space: pre-wrap;">${item.content}</p>
+                    ${mediaHTML}
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 8px; border-top: 1px solid #334155; font-size:13px;">
+                        <span onclick="toggleLike('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #38bdf8">👍 ${item.likes || 0} Likes</span>
+                        <span onclick="openCommentKeyboard('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #94a3b8">💬 ${commentCount} Comments</span>
+                        <span style="color: #64748b">🔄 Shares</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function closeCommentKeyboard() {
+            document.getElementById('keyboard-comment-box').classList.add('hidden');
+            activeCommentPostId = null;
+        }
+
+        window.onload = function() {
+            document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
+            
+            let savedAvatar = localStorage.getItem('nextgen_avatar');
+            if (savedAvatar) {
+                currentUser.avatar = savedAvatar;
+                document.getElementById('profile-avatar').src = savedAvatar;
+                document.getElementById('top-bar-avatar').src = savedAvatar;
+            }
+            
+            listenToFirestore(); 
+            document.getElementById('keyboard-comment-send-btn').onclick = submitKeyboardComment;
+        };
+
+        function goToSearchPage() {
+            const searchOverlay = document.getElementById('search-page-overlay');
+            if (searchOverlay) {
+                searchOverlay.style.display = 'flex';
+                document.getElementById('search-friend-input').value = "";
+                document.getElementById('search-results-container').innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
+                document.getElementById('search-friend-input').focus();
+            }
+        }
+
+        function closeSearchPage() {
+            const searchOverlay = document.getElementById('search-page-overlay');
+            if (searchOverlay) {
+                searchOverlay.style.display = 'none';
+            }
+        }
+
+        function searchFriendRealtime() {
+            let queryText = document.getElementById('search-friend-input').value.trim();
+            let resultsContainer = document.getElementById('search-results-container');
+            
+            if (queryText === "") {
+                resultsContainer.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
+                return;
+            }
+
+            resultsContainer.innerHTML = `<p style="text-align:center; color:#38bdf8; padding:20px;">ရှာဖွေနေပါသည်...</p>`;
+
+            db.collection('posts')
+                .where('author', '>=', queryText)
+                .where('author', '<=', queryText + '\uf8ff')
+                .get()
+                .then((snapshot) => {
+                    resultsContainer.innerHTML = "";
+                    let foundUsers = [];
+
+                    snapshot.forEach((doc) => {
+                        let data = doc.data();
+                        if (data.author && !foundUsers.includes(data.author)) {
+                            foundUsers.push(data.author);
+                        }
+                    });
+
+                    if (foundUsers.length === 0) {
+                        resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">❌ ကိုက်ညီသည့် သူငယ်ချင်း မတွေ့ပါဗျာ။</p>`;
+                        return;
+                    }
+
+                    foundUsers.forEach(username => {
+                        let userCard = document.createElement('div');
+                        userCard.style.display = "flex";
+                        userCard.style.alignItems = "center";
+                        userCard.style.gap = "15px";
+                        userCard.style.padding = "12px 15px";
+                        userCard.style.background = "#1e293b";
+                        userCard.style.borderRadius = "8px";
+                        userCard.style.marginBottom = "10px";
+                        userCard.style.cursor = "pointer";
+                        userCard.style.border = "1px solid #334155";
+                        
+                        userCard.innerHTML = `
+                            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #38bdf8;">
+                            <div>
+                                <strong style="color: white; font-size: 15px;">👤 ${username}</strong>
+                                <span style="display: block; font-size: 11px; color: #38bdf8; margin-top: 2px;">NextGen Active Member</span>
+                            </div>
+                        `;
+                        
+                        userCard.onclick = function() {
+                            alert(`သူငယ်ချင်း ${username} ၏ Profile စနစ်ကို ချိတ်ဆက်ရန် ပြင်ဆင်နေပါသည် R Lay။`);
+                        };
+                        
+                        resultsContainer.appendChild(userCard);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Search Engine Error: ", error);
+                    resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">ဒေတာဘေ့စ် ရှာဖွေရန် အဆင်မပြေပါ။</p>`;
+                });
+        }
+    </script>
 </body>
-                        </html>
-    
+</html>
