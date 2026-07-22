@@ -3,112 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NextGen Social Platform - Phase 1</title>
+  <title>NextGen Social Platform</title>
 
-  <!-- Tailwind CSS (Styling အတွက်) -->
+  <!-- Tailwind CSS & FontAwesome Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans">
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans pb-20">
 
   <!-- Header / Navigation Bar -->
-  <header class="bg-white shadow sticky top-0 z-40 px-4 py-3 flex justify-between items-center max-w-4xl mx-auto rounded-b-lg">
-    <h1 class="text-2xl font-bold text-blue-600 tracking-wide">NextGen</h1>
-    <div id="authArea" class="flex gap-2">
-      <!-- Auth Buttons / User Profile Avatar dynamic ဝင်လာမည် -->
-      <button onclick="openProfileModal()" class="hidden id-user-profile bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full font-medium hover:bg-blue-100 transition">
-        👤 My Profile
-      </button>
+  <header class="bg-white shadow sticky top-0 z-40 px-4 py-3 border-b">
+    <div class="max-w-xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-black text-blue-600 tracking-wide flex items-center gap-2">
+        <i class="fa-solid font-bold fa-bolt text-yellow-500"></i> NextGen
+      </h1>
+      <div id="authArea" class="flex gap-2 items-center">
+        <!-- Logged In Profile Button -->
+        <button onclick="openProfileModal()" class="hidden id-user-profile bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full font-semibold hover:bg-blue-100 transition text-sm flex items-center gap-2">
+          <i class="fa-regular fa-circle-user text-lg"></i> Profile
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-xl mx-auto mt-6 px-4 pb-20">
+  <main class="max-w-xl mx-auto mt-4 px-4">
     
-    <!-- Profile Card Preview (Profile ဖြည့်ထားသည်များ ပြသရန်) -->
-    <div id="profileDisplayCard" class="hidden bg-white rounded-2xl shadow-md overflow-hidden mb-6 border border-gray-100">
-      <div class="h-32 bg-gradient-to-r from-blue-500 to-indigo-600 relative" id="coverDisplay">
-        <!-- Cover Photo -->
-      </div>
+    <!-- 👤 PROFILE CARD (မူလ UI ပေါ်မှာ အဆင့်မြှင့်ထားသော Profile Display) -->
+    <div id="profileDisplayCard" class="hidden bg-white rounded-2xl shadow border border-gray-200 overflow-hidden mb-6">
+      <div class="h-28 bg-gradient-to-r from-blue-500 to-indigo-600 relative" id="coverDisplay"></div>
       <div class="p-4 relative pt-0">
-        <div class="-mt-12 mb-3 flex justify-between items-end">
-          <div class="w-20 h-20 bg-white p-1 rounded-full shadow">
-            <div id="avatarDisplay" class="w-full h-full bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+        <div class="-mt-10 mb-2 flex justify-between items-end">
+          <div class="w-16 h-16 bg-white p-1 rounded-full shadow-md">
+            <div id="avatarDisplay" class="w-full h-full bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl uppercase">
               U
             </div>
           </div>
-          <button onclick="openProfileModal()" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg border font-semibold">
-            ⚙️ Edit Profile
+          <button onclick="openProfileModal()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1">
+            <i class="fa-solid fa-pen"></i> Edit Profile
           </button>
         </div>
-        <h2 id="userNameDisplay" class="text-xl font-bold text-gray-900">User Name</h2>
-        <p id="userRoleBadge" class="text-xs inline-block bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded mt-1">User</p>
-        <p id="bioDisplay" class="text-gray-600 mt-2 text-sm">Bio မရှိသေးပါ။ Profile ပြင်ဆင်ရန် နှိပ်ပါ။</p>
+        
+        <div class="flex items-center gap-2">
+          <h2 id="userNameDisplay" class="text-lg font-bold text-gray-900">User Name</h2>
+          <span id="userRoleBadge" class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full uppercase">User</span>
+        </div>
+        
+        <p id="bioDisplay" class="text-gray-600 mt-1 text-xs leading-relaxed">Bio မရှိသေးပါ။ ပြင်ဆင်ရန် Edit Profile ကို နှိပ်ပါ။</p>
         
         <div class="mt-3 text-xs text-gray-500 grid grid-cols-2 gap-2 border-t pt-2">
-          <p>🌍 Country: <span id="countryDisplay" class="font-medium text-gray-700">Myanmar</span></p>
-          <p>⚧️ Gender: <span id="genderDisplay" class="font-medium text-gray-700">Unspecified</span></p>
-          <p class="col-span-2">🔗 Web: <a id="websiteDisplay" href="#" target="_blank" class="text-blue-500 underline">None</a></p>
+          <p><i class="fa-solid fa-globe text-gray-400 mr-1"></i> <span id="countryDisplay" class="font-medium text-gray-700">Myanmar</span></p>
+          <p><i class="fa-solid fa-venus-mars text-gray-400 mr-1"></i> <span id="genderDisplay" class="font-medium text-gray-700">Unspecified</span></p>
+          <p class="col-span-2"><i class="fa-solid fa-link text-gray-400 mr-1"></i> <a id="websiteDisplay" href="#" target="_blank" class="text-blue-500 underline truncate inline-block max-w-[200px] align-bottom">None</a></p>
         </div>
       </div>
     </div>
 
-    <!-- Feed / Posts Section -->
-    <h3 class="font-bold text-gray-700 mb-3 text-lg">Feeds</h3>
-    
-    <!-- Sample Post Card with Real Share & Role Security -->
-    <div class="bg-white p-4 rounded-xl shadow mb-4 border border-gray-100">
-      <div class="flex justify-between items-start mb-2">
-        <div class="flex items-center gap-2">
-          <div class="w-9 h-9 bg-indigo-500 text-white rounded-full flex items-center justify-center font-bold">A</div>
-          <div>
-            <h4 class="font-bold text-sm">NextGen Admin</h4>
-            <p class="text-xs text-gray-400">Just now</p>
-          </div>
+    <!-- ✍️ POST CREATE BOX (မူလ UI မှ ပို့စ်တင်သည့် Box) -->
+    <div class="bg-white p-4 rounded-xl shadow border border-gray-200 mb-6">
+      <div class="flex gap-3 mb-3">
+        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold" id="postAvatar">U</div>
+        <textarea id="postInput" rows="2" class="w-full border-none focus:ring-0 resize-none text-sm placeholder-gray-400 outline-none" placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?"></textarea>
+      </div>
+      <div class="flex justify-between items-center border-t pt-2">
+        <div class="flex gap-4 text-gray-500 text-sm pl-2">
+          <button class="hover:text-blue-500"><i class="fa-regular fa-image"></i></button>
+          <button class="hover:text-blue-500"><i class="fa-regular fa-face-smile"></i></button>
         </div>
-        <!-- Delete Button (Only active/visible if Security Allows) -->
-        <button onclick="deletePost('post_001', 'admin_uid_here')" class="text-xs text-red-500 hover:underline bg-red-50 px-2 py-1 rounded">
-          🗑️ Delete
+        <button onclick="createPost()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition">
+          Post
         </button>
       </div>
+    </div>
 
-      <p class="text-gray-800 my-3 text-sm leading-relaxed">
-        Welcome to NextGen Social Platform! Phase 1 Update မှာ Admin Security, Real Profile တွေနဲ့ Share System ပါဝင်လာပါပြီ။ 🚀
-      </p>
+    <!-- 📰 FEEDS CONTAINER (ပို့စ်များ Dynamic ပေါ်လာမည့်နေရာ) -->
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="font-bold text-gray-800 text-base">News Feed</h3>
+      <span class="text-xs text-gray-400">Live Updates</span>
+    </div>
 
-      <!-- Post Actions -->
-      <div class="flex border-t pt-2 mt-2 justify-between text-xs font-semibold text-gray-500">
-        <button class="hover:text-blue-600 flex items-center gap-1">👍 Like</button>
-        <button class="hover:text-blue-600 flex items-center gap-1">💬 Comment</button>
-        <!-- Real Share Button -->
-        <button onclick="sharePost('post_001', 'NextGen Welcome Post')" class="hover:text-blue-600 flex items-center gap-1 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-          🔗 Share
-        </button>
+    <div id="postsFeed" class="space-y-4">
+      <!-- Firestore မှ ပို့စ်များ ဒီထဲသို့ ရောက်ရှိလာပါမည် -->
+      <div class="text-center py-8 text-gray-400 text-sm">
+        <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+        <p>Feeds များကို ရယူနေသည်...</p>
       </div>
     </div>
 
   </main>
 
-  <!-- ---------------- MODAL SECTION ---------------- -->
-
-  <!-- Profile Edit Modal -->
+  <!-- ⚙️ EDIT PROFILE MODAL -->
   <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <h3 class="text-xl font-bold mb-4 text-gray-800">Edit Profile</h3>
+    <div class="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b pb-2">
+        <h3 class="text-base font-bold text-gray-800">Edit Profile</h3>
+        <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
       
-      <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-4 text-sm">
+      <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block font-medium mb-1">Cover Photo URL</label>
-          <input type="url" id="inputCover" placeholder="https://example.com/cover.jpg" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+          <label class="block font-semibold mb-1 text-gray-700">Cover Photo URL</label>
+          <input type="url" id="inputCover" placeholder="https://example.com/cover.jpg" class="w-full border p-2 rounded-lg outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block font-medium mb-1">Bio</label>
-          <textarea id="inputBio" rows="2" placeholder="Tell something about yourself..." class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+          <label class="block font-semibold mb-1 text-gray-700">Bio</label>
+          <textarea id="inputBio" rows="2" placeholder="မိမိအကြောင်း အနည်းငယ် ရေးပါ..." class="w-full border p-2 rounded-lg outline-none focus:border-blue-500"></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium mb-1">Gender</label>
+            <label class="block font-semibold mb-1 text-gray-700">Gender</label>
             <select id="inputGender" class="w-full border p-2 rounded-lg outline-none">
               <option value="Male">Male</option>
               <option value="Female">Female</option>
@@ -116,29 +121,29 @@
             </select>
           </div>
           <div>
-            <label class="block font-medium mb-1">Country</label>
+            <label class="block font-semibold mb-1 text-gray-700">Country</label>
             <input type="text" id="inputCountry" placeholder="Myanmar" class="w-full border p-2 rounded-lg outline-none">
           </div>
         </div>
 
         <div>
-          <label class="block font-medium mb-1">Website</label>
+          <label class="block font-semibold mb-1 text-gray-700">Website</label>
           <input type="url" id="inputWebsite" placeholder="https://mywebsite.com" class="w-full border p-2 rounded-lg outline-none">
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeProfileModal()" class="w-1/2 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300">Cancel</button>
-          <button type="submit" class="w-1/2 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">Save Changes</button>
+        <div class="flex gap-2 pt-3">
+          <button type="button" onclick="closeProfileModal()" class="w-1/2 bg-gray-100 text-gray-600 py-2 rounded-lg font-bold hover:bg-gray-200">Cancel</button>
+          <button type="submit" class="w-1/2 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Save Changes</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ---------------- FIREBASE & LOGIC SCRIPT ---------------- -->
+  <!-- ---------------- FIREBASE & LOGIC ---------------- -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, onSnapshot, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // ⚠️ မိမိ Firebase Console မှ Config ဖြင့် အစားထိုးပါ
     const firebaseConfig = {
@@ -156,18 +161,22 @@
 
     let currentUserData = null;
 
-    // 1. Auth State Monitoring
+    // 1. Auth State Observer
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.querySelectorAll('.id-user-profile').forEach(el => el.classList.remove('hidden'));
         document.getElementById('profileDisplayCard').classList.remove('hidden');
+        document.getElementById('postAvatar').innerText = (user.displayName || "U")[0].toUpperCase();
+        
         await loadUserProfile(user.uid);
       } else {
         console.log("No user logged in.");
       }
+      // Posts များကို Realtime စောင့်ကြည့်ယူမည်
+      listenToPosts();
     });
 
-    // 2. Load User Profile from Firestore
+    // 2. Profile ရယူခြင်း
     async function loadUserProfile(uid) {
       try {
         const userRef = doc(db, "users", uid);
@@ -177,10 +186,9 @@
           currentUserData = docSnap.data();
           renderProfile(currentUserData);
         } else {
-          // New User Setup Default Data
           const defaultData = {
-            displayName: auth.currentUser.displayName || "User",
-            role: "user", // Admin PIN မသုံးတော့ဘဲ Role ကို DB ထဲစစ်မည်
+            displayName: auth.currentUser?.displayName || "User",
+            role: "user", // Default Role
             bio: "Welcome to my NextGen profile!",
             country: "Myanmar",
             gender: "Not Specified",
@@ -196,13 +204,13 @@
       }
     }
 
-    // UI Rendering Helper
     function renderProfile(data) {
       document.getElementById('userNameDisplay').innerText = data.displayName || "User";
+      document.getElementById('avatarDisplay').innerText = (data.displayName || "U")[0].toUpperCase();
       document.getElementById('bioDisplay').innerText = data.bio || "No bio set.";
       document.getElementById('countryDisplay').innerText = data.country || "Myanmar";
       document.getElementById('genderDisplay').innerText = data.gender || "Unspecified";
-      document.getElementById('userRoleBadge').innerText = data.role.toUpperCase();
+      document.getElementById('userRoleBadge').innerText = (data.role || "user").toUpperCase();
       
       const webEl = document.getElementById('websiteDisplay');
       if (data.website) {
@@ -218,11 +226,126 @@
       }
     }
 
-    // 3. Save Profile Update Logic
+    // 3. Post တင်သည့် Logic
+    window.createPost = async function() {
+      const user = auth.currentUser;
+      const content = document.getElementById('postInput').value.trim();
+
+      if (!user) return alert("ကျေးဇူးပြု၍ အရင် Log in ဝင်ပါ!");
+      if (!content) return alert("စာသား အနည်းငယ် ရေးပါ!");
+
+      try {
+        await addDoc(collection(db, "posts"), {
+          content: content,
+          authorId: user.uid,
+          authorName: currentUserData?.displayName || user.displayName || "User",
+          createdAt: new Date().toISOString()
+        });
+
+        document.getElementById('postInput').value = "";
+      } catch (err) {
+        console.error("Error creating post:", err);
+        alert("Post တင်၍ မရပါ: " + err.message);
+      }
+    };
+
+    // 4. Realtime Post Feed စောင့်ကြည့်ခြင်း
+    function listenToPosts() {
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+      
+      onSnapshot(q, (snapshot) => {
+        const postsFeed = document.getElementById('postsFeed');
+        postsFeed.innerHTML = "";
+
+        if (snapshot.empty) {
+          postsFeed.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">ပို့စ်များ မရှိသေးပါ။</div>`;
+          return;
+        }
+
+        snapshot.forEach((docSnap) => {
+          const post = docSnap.data();
+          const postId = docSnap.id;
+          const isOwner = auth.currentUser && auth.currentUser.uid === post.authorId;
+          const isAdmin = currentUserData && currentUserData.role === "admin";
+
+          // Delete Button သီသန့် Security (Owner သို့မဟုတ် Admin သာ မြင်ရမည်)
+          const canDelete = isOwner || isAdmin;
+
+          const postHTML = `
+            <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs uppercase">
+                    ${(post.authorName || 'U')[0]}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-xs text-gray-800">${post.authorName || 'User'}</h4>
+                    <p class="text-[10px] text-gray-400">${new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                  </div>
+                </div>
+                ${canDelete ? `
+                  <button onclick="deletePost('${postId}')" class="text-xs text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg">
+                    <i class="fa-regular fa-trash-can"></i>
+                  </button>
+                ` : ''}
+              </div>
+
+              <p class="text-gray-800 my-2 text-sm leading-relaxed">${post.content}</p>
+
+              <div class="flex border-t pt-2 mt-3 justify-between text-xs font-semibold text-gray-500">
+                <button class="hover:text-blue-600 flex items-center gap-1"><i class="fa-regular fa-thumbs-up"></i> Like</button>
+                <button class="hover:text-blue-600 flex items-center gap-1"><i class="fa-regular fa-comment"></i> Comment</button>
+                <button onclick="sharePost('${postId}', '${post.content.substring(0, 30)}')" class="hover:text-blue-600 flex items-center gap-1 text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                  <i class="fa-solid fa-share"></i> Share
+                </button>
+              </div>
+            </div>
+          `;
+          postsFeed.innerHTML += postHTML;
+        });
+      });
+    }
+
+    // 5. Secure Post Delete
+    window.deletePost = async function(postId) {
+      if (confirm("ဒီပို့စ်ကို အမှန်တကယ် ဖျက်မှာ သေချာပါသလား?")) {
+        try {
+          await deleteDoc(doc(db, "posts", postId));
+        } catch (err) {
+          alert("ဖျက်ပိုင်ခွင့် မရှိပါ သို့မဟုတ် Error တက်နေပါသည်: " + err.message);
+        }
+      }
+    };
+
+    // 6. Real Share System
+    window.sharePost = async function(postId, title) {
+      const shareUrl = `${window.location.origin}?post=${postId}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'NextGen Post',
+            text: title,
+            url: shareUrl
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') console.error(err);
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          alert("📌 Post Link ကို Copy ကူးပြီးပါပြီ!");
+        } catch (err) {
+          prompt("Post Link ကို Copy ယူပါ:", shareUrl);
+        }
+      }
+    };
+
+    // 7. Profile Save & Modal Handlers
     window.saveProfile = async function(event) {
       event.preventDefault();
       const user = auth.currentUser;
-      if (!user) return alert("Please log in first!");
+      if (!user) return alert("Please log in!");
 
       const updatedData = {
         coverPhoto: document.getElementById('inputCover').value,
@@ -234,60 +357,14 @@
 
       try {
         await updateDoc(doc(db, "users", user.uid), updatedData);
-        alert("✅ Profile updated successfully!");
+        alert("✅ Profile အချက်အလက်များ ပြင်ဆင်ပြီးပါပြီ!");
         closeProfileModal();
         loadUserProfile(user.uid);
       } catch (err) {
         console.error("Profile Save Error:", err);
-        alert("Failed to update profile!");
       }
     };
 
-    // 4. Secure Delete Function (Role-based Validation)
-    window.deletePost = async function(postId, authorId) {
-      const user = auth.currentUser;
-      if (!user) return alert("Access denied!");
-
-      // Security Check: Post owner သို့မဟုတ် Admin သာ ဖျက်ခွင့်ရှိမည်
-      const isAdmin = currentUserData && currentUserData.role === "admin";
-      const isOwner = user.uid === authorId;
-
-      if (!isAdmin && !isOwner) {
-        alert("⛔ ခွင့်ပြုချက်မရှိပါ။ မိမိ ပို့စ် သို့မဟုတ် Admin သာ ဖျက်ခွင့်ရှိပါသည်။");
-        return;
-      }
-
-      if (confirm("ဒီပို့စ်ကို အမှန်တကယ် ဖျက်မှာ သေချာပါသလား?")) {
-        // Firestore Delete Logic...
-        alert(`Post ${postId} deleted successfully.`);
-      }
-    };
-
-    // 5. Real Share System (Web Share API / Clipboard)
-    window.sharePost = async function(postId, title) {
-      const shareUrl = `${window.location.origin}?post=${postId}`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: title,
-            text: 'Check out this post on NextGen Platform!',
-            url: shareUrl
-          });
-        } catch (err) {
-          if (err.name !== 'AbortError') console.error('Share Error:', err);
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          alert("📌 Post Link ကို Clipboard သို့ Copy ကူးပြီးပါပြီ!");
-        } catch (err) {
-          prompt("Post Link ကို Copy ကူးပါ:", shareUrl);
-        }
-      }
-    };
-
-    // Modal Helpers
     window.openProfileModal = function() {
       if (currentUserData) {
         document.getElementById('inputCover').value = currentUserData.coverPhoto || "";
@@ -304,5 +381,5 @@
     };
   </script>
 </body>
-          </html>
-                                                              
+            </html>
+  
