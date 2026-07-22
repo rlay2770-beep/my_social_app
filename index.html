@@ -9,10 +9,10 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
-    <!-- Babel JS (JSX ကို Browser မှာ တိုက်ရိုက် Run စေရန်) -->
+    <!-- Babel JS -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Tailwind CSS (Styling) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Lucide Icons -->
@@ -28,7 +28,6 @@
         const { useState, useEffect } = React;
 
         function App() {
-            // User State
             const [currentUser, setCurrentUser] = useState({
                 id: "user_001",
                 name: "NextGen User",
@@ -39,18 +38,15 @@
                 avatar: "N"
             });
 
-            // Tab & Feed States
             const [activeTab, setActiveTab] = useState('feed'); 
             const [feedType, setFeedType] = useState('news');
             
-            // Input States
             const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
             const [newPostText, setNewPostText] = useState('');
             const [commentInputs, setCommentInputs] = useState({});
             const [activeCommentPostId, setActiveCommentPostId] = useState(null);
             const [editFormData, setEditFormData] = useState({ ...currentUser });
 
-            // Posts State
             const [posts, setPosts] = useState([
                 {
                     id: "post_1",
@@ -74,14 +70,12 @@
                 }
             ]);
 
-            // Re-render Icons when DOM updates
             useEffect(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
             }, [activeTab, posts, isEditProfileOpen, activeCommentPostId]);
 
-            // 1. Like / Unlike Toggle
             const handleLikeToggle = (postId) => {
                 setPosts(prevPosts =>
                     prevPosts.map(post => {
@@ -97,7 +91,6 @@
                 );
             };
 
-            // 2. Add New Post
             const handleCreatePost = (e) => {
                 if (e) e.preventDefault();
                 if (!newPostText.trim()) return;
@@ -116,7 +109,6 @@
                 setNewPostText('');
             };
 
-            // 3. Add Comment
             const handleAddComment = (postId) => {
                 const text = commentInputs[postId];
                 if (!text || !text.trim()) return;
@@ -139,7 +131,6 @@
                 setCommentInputs({ ...commentInputs, [postId]: '' });
             };
 
-            // 4. Save Profile
             const handleSaveProfile = (e) => {
                 e.preventDefault();
                 setCurrentUser({ ...editFormData });
@@ -148,8 +139,6 @@
 
             return (
                 <div className="flex flex-col items-center min-h-screen">
-                    
-                    <!-- Header -->
                     <header className="w-full max-w-2xl bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
                         <h1 className="text-xl font-bold text-indigo-600 tracking-wide">NextGen</h1>
                         <nav className="flex space-x-1 sm:space-x-4">
@@ -174,10 +163,7 @@
                         </nav>
                     </header>
 
-                    <!-- Main Container -->
                     <main className="w-full max-w-2xl p-4 flex-1">
-                        
-                        <!-- FEEDS TAB -->
                         {activeTab === 'feed' && (
                             <div className="space-y-4">
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
@@ -218,7 +204,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Posts List -->
                                 {posts.map(post => {
                                     const isLiked = post.likedBy.includes(currentUser.id);
                                     const isCommentOpen = activeCommentPostId === post.id;
@@ -259,7 +244,6 @@
                                                 </button>
                                             </div>
 
-                                            {/* Comments */}
                                             {isCommentOpen && (
                                                 <div className="pt-3 border-t border-slate-100 space-y-3">
                                                     {post.comments.map(c => (
@@ -293,7 +277,6 @@
                             </div>
                         )}
 
-                        <!-- EXPLORE TAB -->
                         {activeTab === 'explore' && (
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                                 <h2 className="text-lg font-bold text-slate-800">Explore Trends</h2>
@@ -311,101 +294,7 @@
                             </div>
                         )}
 
-                        <!-- Posts List -->
-                                {posts.map(post => {
-                                    const isLiked = post.likedBy.includes(currentUser.id);
-                                    const isCommentOpen = activeCommentPostId === post.id;
-
-                                    return (
-                                        <div key={post.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">
-                                                    {post.avatar}
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-semibold text-sm text-slate-900">{post.author}</h4>
-                                                    <p className="text-xs text-slate-400">{post.time}</p>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{post.content}</p>
-
-                                            <div className="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
-                                                <button 
-                                                    onClick={() => handleLikeToggle(post.id)}
-                                                    className={`flex items-center gap-1.5 transition ${isLiked ? 'text-red-500 font-bold' : 'hover:text-slate-800'}`}
-                                                >
-                                                    <i data-lucide="heart" className="w-4 h-4"></i>
-                                                    Like ({post.likedBy.length})
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => setActiveCommentPostId(isCommentOpen ? null : post.id)}
-                                                    className="flex items-center gap-1.5 hover:text-slate-800 transition"
-                                                >
-                                                    <i data-lucide="message-circle" className="w-4 h-4"></i>
-                                                    Comment ({post.comments.length})
-                                                </button>
-
-                                                <button className="flex items-center gap-1.5 hover:text-slate-800 transition">
-                                                    <i data-lucide="share-2" className="w-4 h-4"></i> Share
-                                                </button>
-                                            </div>
-
-                                            {/* Comments */}
-                                            {isCommentOpen && (
-                                                <div className="pt-3 border-t border-slate-100 space-y-3">
-                                                    {post.comments.map(c => (
-                                                        <div key={c.id} className="bg-slate-50 p-2.5 rounded-lg text-xs space-y-1">
-                                                            <span className="font-bold text-slate-800">{c.author}: </span>
-                                                            <span className="text-slate-600">{c.text}</span>
-                                                        </div>
-                                                    ))}
-
-                                                    <div className="flex gap-2">
-                                                        <input 
-                                                            type="text" 
-                                                            placeholder="ကွန်မန့်ရေးရန်..."
-                                                            value={commentInputs[post.id] || ''}
-                                                            onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                                                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
-                                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                                        />
-                                                        <button 
-                                                            onClick={() => handleAddComment(post.id)}
-                                                            className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center"
-                                                        >
-                                                            <i data-lucide="send" className="w-3.5 h-3.5"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        <!-- EXPLORE TAB -->
-                        {activeTab === 'explore' && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                                <h2 className="text-lg font-bold text-slate-800">Explore Trends</h2>
-                                <p className="text-sm text-slate-500">နောက်ဆုံးရ Trending ခေါင်းစဉ်များကို ဒီနေရာမှာ တွေ့မြင်ရပါမည်။</p>
-                                
-                                <div className="space-y-3 pt-2">
-                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center">
-                                        <div>
-                                            <p className="text-xs text-slate-400">Trending in Myanmar</p>
-                                            <p className="font-semibold text-sm text-indigo-600">#NextGenSocial</p>
-                                        </div>
-                                        <span className="text-xs text-slate-400">1.2K Posts</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <!-- PROFILE TAB -->
-                        {activeTab === 'profile' && (
+                         {activeTab === 'profile' && (
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
                                 <div className="flex justify-between items-start">
                                     <div className="flex gap-4 items-center">
@@ -448,10 +337,8 @@
                                 </div>
                             </div>
                         )}
-
                     </main>
 
-                    <!-- EDIT PROFILE MODAL -->
                     {isEditProfileOpen && (
                         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
                             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
@@ -536,12 +423,10 @@
                             </div>
                         </div>
                     )}
-
                 </div>
             );
         }
 
-        // Render React Application
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
