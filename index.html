@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
-    <!-- 🎨 CSS Styles (ဒီနေရာတွင် စုစည်းထားသည်) -->
+    <!-- 🎨 CSS Styles -->
     <style>
         body {
             margin: 0;
@@ -285,7 +285,7 @@
             <h3 class="title-blue" style="margin-bottom: 20px;">မန်ဘာအကောင့်နှင့် ဆက်တင်</h3>
             
             <div id="login-container" class="feed-card">
-                <h4 class="title-blue" style="margin-top: 0; margin-bottom: 15px;">🔐 လုံခြုံစွာ အကောင့်ဝင်ရန်</h4>
+                <h4 class="title-blue" style="margin-top: 0; margin-bottom: 15px;">🔐 လုံခြုံစွာ အကောင့်ဝင်ရန် / အကောင့်သစ်ဖွင့်ရန်</h4>
                 <label class="sub-label">အသုံးပြုသူအမည် (Username)</label>
                 <input type="text" id="login-username" placeholder="ဥပမာ - R Lay" class="input-field mb-12">
                 
@@ -294,7 +294,8 @@
                 
                 <label class="sub-label">လျှို့ဝှက်နံပါတ် (Password)</label>
                 <input type="password" id="login-password" placeholder="စကားဝှက် ရိုက်ထည့်ပါ" class="input-field mb-15">
-                <button onclick="handleSecureLogin()" class="btn-primary full-width">လုံခြုံစွာ ဝင်ရောက်မည်</button>
+                
+                <button onclick="handleSecureLogin()" class="btn-primary full-width">လုံခြုံစွာ ဝင်ရောက်မည် / အကောင့်သစ်ဆောက်မည်</button>
             </div>
 
             <!-- Profile Container -->
@@ -370,7 +371,7 @@
         </div>
     </div>
 
-    <!-- ⚡ JavaScript Logic (ဒီနေရာတွင် စုစည်းထားသည်) -->
+    <!-- ⚡ JavaScript Logic -->
     <script>
         // 🌐 Firebase Configuration
         const firebaseConfig = {
@@ -393,7 +394,7 @@
 
         let currentUser = {
             isLoggedIn: false,
-            username: "ဧည့်သည် (Guest)",
+            username: "",
             email: "",
             avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
             isAdmin: false
@@ -469,7 +470,7 @@
             });
         }
 
-        function getYouTubeEmbedUrl(url) {
+    function getYouTubeEmbedUrl(url) {
             let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             let match = url.match(regExp);
             if (match && match[2].length === 11) {
@@ -537,6 +538,13 @@
         }
 
         async function createNewPost() {
+            // 🛑 အကောင့်မဝင်ထားပါက ပို့စ်တင်ခွင့် မပြုပါ
+            if (!currentUser.isLoggedIn) {
+                alert("🛑 ပို့စ်တင်ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါ။ Profile စာမျက်နှာသို့ သွားရောက်ပါဗျာ။");
+                switchPage('profile', document.getElementById('nav-profile-btn'));
+                return;
+            }
+
             let textInput = document.getElementById('post-text');
             let mediaInput = document.getElementById('post-media-url');
             let photoInput = document.getElementById('post-photo-input');
@@ -632,6 +640,7 @@
             document.getElementById('post-audio-input').value = "";
         }
 
+        // 🔐 Login / Account Signup ဖွင့်ဆောက်ပေးသည့် Function
         function handleSecureLogin() {
             let userIn = document.getElementById('login-username');
             let emailIn = document.getElementById('login-google-email');
@@ -642,46 +651,71 @@
             let pWord = passIn.value.trim();
 
             if(uName === "" || email === "" || pWord === "") {
-                alert("အချက်အလက်အားလုံးကို ဖြည့်စွက်ပေးပါ။");
+                alert("အချက်အလက်အားလုံး (Username, Email, Password) ကို ဖြည့်စွက်ပေးပါဗျာ။");
                 return;
             }
 
+            if(pWord.length < 6) {
+                alert("လျှို့ဝှက်နံပါတ် (Password) သည် အနည်းဆုံး ၆ လုံး သို့မဟုတ် ထို့ထက်ပိုရပါမည်။");
+                return;
+            }
+
+            // အရင်ဆုံး အကောင့်ဝင်ရန် စမ်းသပ်မည်
             auth.signInWithEmailAndPassword(email, pWord)
-                .then(() => { successLoginSetup(uName, email); })
+                .then(() => { 
+                    successLoginSetup(uName, email); 
+                })
                 .catch((error) => {
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+                    // အကောင့်မရှိသေးလျှင် (သို့မဟုတ်) Credential မှားယွင်းပါက အကောင့်အသစ် တိုက်ရိုက်ဆောက်ပေးမည်
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
                         auth.createUserWithEmailAndPassword(email, pWord)
-                            .then(() => { successLoginSetup(uName, email); });
+                            .then(() => {
+                                successLoginSetup(uName, email);
+                            })
+                            .catch((createErr) => {
+                                if(createErr.code === 'auth/email-already-in-use') {
+                                    alert("❌ ဤ အီးမေးလ်ဖြင့် အကောင့်ရှိပြီးသားဖြစ်ပါသည်။ လျှို့ဝှက်နံပါတ် (Password) မှန်အောင် ပြန်ရိုက်ပါ။");
+                                } else {
+                                    alert("🔒 အကောင့်ဝင်ရန်/ဆောက်ရန် အဆင်မပြေပါ: " + createErr.message);
+                                }
+                            });
                     } else {
                         alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
                     }
                 });
-        }
+            }
 
         function successLoginSetup(username, email) {
             currentUser.isLoggedIn = true;
             currentUser.username = username;
             currentUser.email = email;
 
+            localStorage.setItem('nextgen_logged_in', 'true');
+            localStorage.setItem('nextgen_username', username);
+            localStorage.setItem('nextgen_email', email);
+
             document.getElementById('login-container').classList.add('hidden');
             document.getElementById('profile-container').classList.remove('hidden');
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
-            alert(`ကြိုဆိုပါတယ် ${currentUser.username}`);
+            alert(`🎉 ကြိုဆိုပါတယ် ${currentUser.username}`);
         }
 
         function handleLogout() {
             auth.signOut().then(() => {
                 currentUser.isLoggedIn = false;
-                currentUser.username = "ဧည့်သည် (Guest)";
+                currentUser.username = "";
                 currentUser.email = "";
                 currentUser.isAdmin = false;
                 
+                localStorage.removeItem('nextgen_logged_in');
+                localStorage.removeItem('nextgen_username');
+                localStorage.removeItem('nextgen_email');
+
                 document.getElementById('admin-indicator').classList.add('hidden');
                 document.getElementById('profile-container').classList.add('hidden');
                 document.getElementById('login-container').classList.remove('hidden');
                 alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
-                listenToFirestore(); 
             });
         }
 
@@ -700,6 +734,7 @@
                 }
             }
         }
+
         function deletePostPermanently(firebaseKey, type) {
             if (!currentUser.isAdmin) return;
             let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
@@ -722,6 +757,12 @@
         }
 
         function openCommentKeyboard(firebaseKey, type) {
+            if (!currentUser.isLoggedIn) {
+                alert("💬 ကွန်မန့်ပေးပို့ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါဗျာ။");
+                switchPage('profile', document.getElementById('nav-profile-btn'));
+                return;
+            }
+
             activeCommentPostId = firebaseKey;
             activeCommentType = type;
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -873,6 +914,22 @@
         window.onload = function() {
             document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
             
+            // Auto Login state check
+            let savedLoggedIn = localStorage.getItem('nextgen_logged_in');
+            let savedUsername = localStorage.getItem('nextgen_username');
+            let savedEmail = localStorage.getItem('nextgen_email');
+
+            if (savedLoggedIn === 'true' && savedUsername) {
+                currentUser.isLoggedIn = true;
+                currentUser.username = savedUsername;
+                currentUser.email = savedEmail || "";
+
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('profile-container').classList.remove('hidden');
+                document.getElementById('profile-name').innerText = currentUser.username;
+                document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
+            }
+
             let savedAvatar = localStorage.getItem('nextgen_avatar');
             if (savedAvatar) {
                 currentUser.avatar = savedAvatar;
