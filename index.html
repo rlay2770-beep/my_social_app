@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen App v3 (TikTok Style Update)</title>
+    <title>NextGen App v3</title>
     <link rel="stylesheet" href="style.css">
     
     <!-- 🌐 Firebase SDK Core & Modules -->
@@ -14,48 +14,45 @@
 <body>
 
     <!-- Top Bar -->
-    <div style="padding: 12px 15px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100;">
-        <span id="app-logo" style="font-size: 22px; font-weight: bold; color: #38bdf8; user-select: none;">
-            NextGen
-        </span>
+    <div class="top-bar">
+        <span id="app-logo">NextGen</span>
         
-        <!-- 🔍 ရွှေ့ပြောင်းထားသော ရှာဖွေရေး မှန်ဘီလူးခလုတ် (Logo နှင့် Profile ကြားတွင် နေရာချထားသည်) -->
-        <div onclick="goToSearchPage()" style="cursor: pointer; padding: 6px 12px; background: #1e293b; border-radius: 20px; border: 1px solid #334155; display: flex; align-items: center; gap: 5px;">
-            <span style="font-size: 16px;">🔍</span>
-            <span style="font-size: 12px; color: #94a3b8; display: inline-block;">Search Friends...</span>
+        <!-- 🔍 ရှာဖွေရေး မှန်ဘီလူးခလုတ် -->
+        <div onclick="goToSearchPage()" class="search-btn">
+            <span>🔍</span>
+            <span class="search-text">Search Friends...</span>
         </div>
 
         <div onclick="switchPage('profile', document.getElementById('nav-profile-btn'))" style="cursor: pointer;">
-            <img id="top-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
+            <img id="top-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-small">
         </div>
     </div>
 
     <!-- Main Content Wrapper -->
-    <main class="content-wrapper" style="padding-bottom: 80px;">
+    <main class="content-wrapper">
         
-        <!-- 1. HOME Сာမျက်နှာ -->
+        <!-- 1. HOME စာမျက်နှာ -->
         <section id="feed-page" class="page-section">
-            <div id="post-input-box" style="flex-direction: column; gap: 10px; border-radius: 16px; display: flex; background: #1e293b; padding: 15px; margin-bottom: 20px;">
-                <label style="color: #38bdf8; font-size: 14px; font-weight: bold;">📝 အသစ်တင်မည်</label>
+            <div id="post-input-box" class="post-box">
+                <label class="label-blue">📝 အသစ်တင်မည်</label>
                 
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box;">
-                
-                <input type="text" id="post-media-url" placeholder="ဓာတ်ပုံ/ဗီဒီယို/သီချင်း Link (YouTube/TikTok/Direct Link)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; font-size: 13px;">
+                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." class="input-field">
+                <input type="text" id="post-media-url" placeholder="ဓာတ်ပုံ/ဗီဒီယို/သီချင်း Link (YouTube/TikTok/Direct Link)" class="input-field font-small">
                 
                 <!-- Dual File Selector Panel -->
-                <div id="file-uploader-area" style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px dashed #334155; display: flex; flex-direction: column; gap: 8px;">
+                <div id="file-uploader-area" class="upload-area">
                     <div id="photo-input-container">
-                        <label id="photo-input-label" style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">📷 ဓာတ်ပုံရွေးချယ်ရန်:</label>
-                        <input type="file" id="post-photo-input" accept="image/*" style="color: #64748b; font-size: 12px;">
+                        <label id="photo-input-label" class="sub-label">📷 ဓာတ်ပုံရွေးချယ်ရန်:</label>
+                        <input type="file" id="post-photo-input" accept="image/*" class="file-input">
                     </div>
                     <div id="audio-input-container" class="hidden">
-                        <label id="audio-input-label" style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 3px;">🎵 MP3 သီချင်းဖိုင်ရွေးချယ်ရန်:</label>
-                        <input type="file" id="post-audio-input" accept="audio/mp3, audio/*" style="color: #64748b; font-size: 12px;">
+                        <label id="audio-input-label" class="sub-label">🎵 MP3 သီချင်းဖိုင်ရွေးချယ်ရန်:</label>
+                        <input type="file" id="post-audio-input" accept="audio/mp3, audio/*" class="file-input">
                     </div>
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px;">
-                    <select id="post-type" style="background: #0f172a; color: white; border: 1px solid #334155; padding: 5px; border-radius: 6px;" onchange="adjustUploadUI()">
+                <div class="post-action-bar">
+                    <select id="post-type" class="select-field" onchange="adjustUploadUI()">
                         <option value="text_only">စာသားသက်သက် (Text)</option>
                         <option value="image">ဓာတ်ပုံပို့စ် (Image)</option>
                         <option value="video">ဗီဒီယိုပို့စ် (Video)</option>
@@ -63,79 +60,77 @@
                         <option value="tiktok_style">🎵 ပုံ + သီချင်းတွဲတင်မည် (TikTok Style)</option>
                         <option value="ad_post">📢 Sponsor Ad (Admin Only)</option>
                     </select>
-                    <button onclick="createNewPost()" style="background: #38bdf8; color: black; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">Post တင်မည်</button>
+                    <button onclick="createNewPost()" class="btn-primary">Post တင်မည်</button>
                 </div>
             </div>
             
             <!-- Live Premium Ads Box -->
             <div id="home-ad-banner" style="margin-bottom: 15px;"></div>
-            
             <div id="feed-container"></div>
         </section>
 
         <!-- 2. VIDEO စာမျက်နှာ -->
         <section id="video-page" class="page-section hidden">
-            <h3 style="color: #38bdf8; text-align: center; margin-bottom: 15px;">🎥 NextGen Videos</h3>
+            <h3 class="section-title title-blue">🎥 NextGen Videos</h3>
             <div id="video-container"></div>
         </section>
 
         <!-- 3. ADS စာမျက်နှာ -->
         <section id="ads-page" class="page-section hidden">
-            <h3 style="color: #eab308; text-align: center; margin-bottom: 15px;">💰 Sponsor Ads Gallery</h3>
+            <h3 class="section-title title-yellow">💰 Sponsor Ads Gallery</h3>
             <div id="ads-container"></div>
         </section>
 
         <!-- 4. PROFILE & SETTING စာမျက်နှာ -->
         <section id="profile-page" class="page-section hidden">
-            <h3 style="margin-bottom: 20px; color: #38bdf8;">မန်ဘာအကောင့်နှင့် ဆက်တင်</h3>
+            <h3 class="title-blue" style="margin-bottom: 20px;">မန်ဘာအကောင့်နှင့် ဆက်တင်</h3>
             
             <div id="login-container" class="feed-card">
-                <h4 style="margin-top: 0; color: #38bdf8; margin-bottom: 15px;">🔐 လုံခြုံစွာ အကောင့်ဝင်ရန်</h4>
-                <label style="font-size: 13px; color: #94a3b8; display: block; margin-bottom: 5px;">အသုံးပြုသူအမည် (Username)</label>
-                <input type="text" id="login-username" placeholder="ဥပမာ - R Lay" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box;">
+                <h4 class="title-blue" style="margin-top: 0; margin-bottom: 15px;">🔐 လုံခြုံစွာ အကောင့်ဝင်ရန်</h4>
+                <label class="sub-label">အသုံးပြုသူအမည် (Username)</label>
+                <input type="text" id="login-username" placeholder="ဥပမာ - R Lay" class="input-field mb-12">
                 
-                <label style="font-size: 13px; color: #94a3b8; display: block; margin-bottom: 5px;">ဂူဂဲလ်အကောင့် အီးမေးလ်</label>
-                <input type="email" id="login-google-email" placeholder="example@gmail.com" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box;">
+                <label class="sub-label">ဂူဂဲလ်အကောင့် အီးမေးလ်</label>
+                <input type="email" id="login-google-email" placeholder="example@gmail.com" class="input-field mb-12">
                 
-                <label style="font-size: 13px; color: #94a3b8; display: block; margin-bottom: 5px;">လျှို့ဝှက်နံပါတ် (Password)</label>
-                <input type="password" id="login-password" placeholder="စကားဝှက် ရိုက်ထည့်ပါ" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
-                <button onclick="handleSecureLogin()" style="width: 100%; padding: 12px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">လုံခြုံစွာ ဝင်ရောက်မည်</button>
+                <label class="sub-label">လျှို့ဝှက်နံပါတ် (Password)</label>
+                <input type="password" id="login-password" placeholder="စကားဝှက် ရိုက်ထည့်ပါ" class="input-field mb-15">
+                <button onclick="handleSecureLogin()" class="btn-primary full-width">လုံခြုံစွာ ဝင်ရောက်မည်</button>
             </div>
 
             <!-- Profile Container -->
-            <div id="profile-container" class="feed-card hidden" style="text-align: center;">
+            <div id="profile-container" class="feed-card hidden text-center">
                 <div style="position: relative; display: inline-block; margin-bottom: 15px;">
-                    <img id="profile-avatar" onclick="triggerAdminSecret()" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #38bdf8; cursor: pointer;">
-                    <label for="avatar-upload" style="position: absolute; bottom: 0; right: 0; background: #38bdf8; color: black; padding: 6px; border-radius: 50%; cursor: pointer; font-size: 12px;">📷</label>
+                    <img id="profile-avatar" onclick="triggerAdminSecret()" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-large">
+                    <label for="avatar-upload" class="avatar-edit-badge">📷</label>
                     <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadProfilePicture()">
                 </div>
                 <h3 id="profile-name" onclick="triggerAdminSecret()" style="margin: 5px 0; color: white; cursor: pointer;">R Lay</h3>
                 <p id="profile-email" style="color: #38bdf8; font-size: 13px; margin: 0 0 10px 0;"></p>
-                <p id="admin-indicator" style="color: #ef4444; font-size: 14px; font-weight: bold; margin-bottom: 15px;" class="hidden">⭐ Verified Admin Access Mode</p>
-                
-                <!-- Settings & Payments Section -->
+                <p id="admin-indicator" class="hidden" style="color: #ef4444; font-size: 14px; font-weight: bold; margin-bottom: 15px;">⭐ Verified Admin Access Mode</p>
+
                 <div style="text-align: left; margin-top: 25px; border-top: 1px solid #334155; padding-top: 15px;">
-                    <h4 style="color: #38bdf8; margin-bottom: 10px;">⚙️ App Settings & Rules</h4>
+                    <h4 class="title-blue" style="margin-bottom: 10px;">⚙️ App Settings & Rules</h4>
                     
-                    <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #233554; margin-bottom: 12px;">
+                    <div class="info-box">
                         <span style="font-weight: bold; color: white; display: block; margin-bottom: 5px;">📜 စည်းကမ်းသတ်မှတ်ချက်များ</span>
                         <p style="font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.4;">
-                            NextGen App တွင် ဥပဒေနှင့်မလွတ်ကင်းသော ပို့စ်များ၊ အမုန်းစကားများနှင့် အဖော်အချွတ် ပုံ/ဗီဒီယိုများ လုံးဝတင်ခြင်း မပြုရ။ ချိုးဖောက်ပါက အကောင့်အား အပြီးပိတ်သိမ်းမည် ဖြစ်သည်။
+                            NextGen App တွင် ဥပဒေနှင့်မလွတ်ကင်းသော ပို့စ်များ၊ အမုန်းစကားများနှင့် အဖော်အချွတ် ပုံ/ဗီဒီယိုများ လုံးဝတင်ခြင်း မပြုရ။
                         </p>
                     </div>
-                    <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #233554; margin-bottom: 15px;">
+                    <div class="info-box">
                         <span style="font-weight: bold; color: #eab308; display: block; margin-bottom: 5px;">📢 ကြော်ငြာကဏ္ဍ ငွေပေးချေမှုစနစ်</span>
                         <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 8px 0; line-height: 1.4;">
                             မိမိတို့၏ လုပ်ငန်းကြော်ငြာများကို NextGen Feed တွင် ထည့်သွင်းလိုပါက အောက်ပါ Wavepay ဖုန်းနံပါတ်သို့ ဆက်သွယ်ငွေလွှဲအပ်နှံနိုင်ပါသည်။
                         </p>
                         <div style="background: #1e293b; padding: 8px; border-radius: 6px; text-align: center; border: 1px solid #334155;">
                             <span style="font-size: 13px; color: #38bdf8; font-weight: bold; display: block;">💸 Wavepay Account</span>
-                            <span id="wavepay-display-num" style="font-size: 16px; color: white; font-weight: bold; letter-spacing: 1px;"></span>
+                            <span id="wavepay-display-num" style="font-size: 16px; color: white; font-weight: bold;"></span>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="handleLogout()" style="background: #ef4444; color: white; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px;">အကောင့်မှ ထွက်မည်</button>
+                <button onclick="handleLogout()" class="btn-danger full-width">အကောင့်မှ ထွက်မည်</button>
             </div>
         </section>
 
@@ -149,990 +144,34 @@
         </div>
         <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
         <div style="display: flex; gap: 8px;">
-            <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." style="flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
-            <button id="keyboard-comment-send-btn" style="background: #38bdf8; color: black; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Send</button>
+            <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." class="input-field" style="flex: 1;">
+            <button id="keyboard-comment-send-btn" class="btn-primary">Send</button>
         </div>
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 90;">
+    <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchPage('feed', this)">Home</button>
         <button class="nav-item" onclick="switchPage('video', this)">🎥 Video</button>
         <button class="nav-item" onclick="switchPage('ads', this)">📢 Ads</button>
         <button id="nav-profile-btn" class="nav-item" onclick="switchPage('profile', this)">👤 Profile</button>
     </nav>
 
-    <!-- ၂။ သူငယ်ချင်းရှာဖွေရန် စာမျက်နှာအသစ် (Overlay Search View) -->
-    <div id="search-page-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 1000; display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
+    <!-- Search Overlay Page -->
+    <div id="search-page-overlay" class="search-overlay">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="color: #38bdf8; margin: 0; font-size: 20px;">🔍 Friends Search</h3>
             <button onclick="closeSearchPage()" style="background: none; border: none; color: #ef4444; font-size: 24px; cursor: pointer;">✕</button>
         </div>
         <div style="background: #1e293b; padding: 10px; border-radius: 12px; margin-bottom: 15px;">
-            <input type="text" id="search-friend-input" oninput="searchFriendRealtime()" placeholder="သူငယ်ချင်း၏ အမည်ပထမစာလုံးကို ရိုက်ပါ..." style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #38bdf8; color: white; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none;">
+            <input type="text" id="search-friend-input" oninput="searchFriendRealtime()" placeholder="သူငယ်ချင်း၏ အမည်ပထမစာလုံးကို ရိုက်ပါ..." class="input-field" style="border-color: #38bdf8; font-size: 15px;">
         </div>
         <div id="search-results-container" style="flex: 1; overflow-y: auto;">
             <p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>
         </div>
     </div>
 
-    <script src="admin.js"></script>
+    <script src="script.js"></script>
 </body>
-</html>
-// 🌐 Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
-  authDomain: "my-social-app-13d41.firebaseapp.com",
-  databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
-  projectId: "my-social-app-13d41",
-  storageBucket: "my-social-app-13d41.firebasestorage.app",
-  messagingSenderId: "929198714349",
-  appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
-  measurementId: "G-2QDS45V6VL"
-};
-
-// 💸 R Lay ၏ Wavepay ဖုန်းနံပါတ်အသစ်အား ဤနေရာတွင် သိမ်းဆည်းထားပါသည်
-const WAVEPAY_PHONE = "09663711680"; 
-
-// Initialize Firebase Tools
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore(); 
-const auth = firebase.auth();
-
-// App Global State Container
-let currentUser = {
-    isLoggedIn: false,
-    username: "ဧည့်သည် (Guest)",
-    email: "",
-    avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-    isAdmin: false
-};
-
-const adminPIN = "4784";
-let activeCommentPostId = null;
-let activeCommentType = 'feed';
-let avatarClickCount = 0;
-
-// Dynamic File Input UI Control Panel
-function adjustUploadUI() {
-    let type = document.getElementById('post-type').value;
-    let photoArea = document.getElementById('photo-input-container');
-    let audioArea = document.getElementById('audio-input-container');
+                        </html>
     
-    if (type === 'audio') {
-        photoArea.classList.add('hidden');
-        audioArea.classList.remove('hidden');
-    } else if (type === 'tiktok_style') {
-        photoArea.classList.remove('hidden');
-        audioArea.classList.remove('hidden');
-    } else {
-        photoArea.classList.remove('hidden');
-        audioArea.classList.add('hidden');
-    }
-}
-
-// Smooth Page Switcher
-function switchPage(pageId, buttonElement) {
-    try {
-        document.querySelectorAll('.page-section').forEach(page => page.classList.add('hidden'));
-        const targetPage = document.getElementById(`${pageId}-page`);
-        if (targetPage) targetPage.classList.remove('hidden');
-
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        if (buttonElement) buttonElement.classList.add('active');
-        
-        closeCommentKeyboard();
-    } catch (e) {
-        console.error("Navigation Runtime Error: ", e);
-    }
-}
-
-// Cloud Firestore Dynamic Realtime Monitoring Engine
-function listenToFirestore() {
-    db.collection('posts').orderBy('id', 'desc').onSnapshot((snapshot) => {
-        let samplePosts = [];
-        snapshot.forEach((doc) => {
-            let post = doc.data();
-            post.firebaseKey = doc.id; 
-            samplePosts.push(post);
-        });
-        renderSection('feed-container', samplePosts, 'feed');
-    });
-
-    db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
-        let sampleVideos = [];
-        snapshot.forEach((doc) => {
-            let video = doc.data();
-            video.firebaseKey = doc.id;
-            sampleVideos.push(video);
-        });
-        renderSection('video-container', sampleVideos, 'video');
-    });
-
-    db.collection('ads').orderBy('id', 'desc').onSnapshot((snapshot) => {
-        let adsList = [];
-        snapshot.forEach((doc) => {
-            let ad = doc.data();
-            ad.firebaseKey = doc.id;
-            adsList.push(ad);
-        });
-        renderSection('ads-container', adsList, 'ads');
-        renderHomeAdBanner(adsList);
-    });
-}
-
-function getYouTubeEmbedUrl(url) {
-    let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    let match = url.match(regExp);
-    if (match && match[2].length === 11) {
-        return `https://www.youtube.com/embed/${match[2]}`;
-    }
-    return url;
-}
-
-// ⚡ Crash-Proof Photo Compressor
-async function compressImageSafe(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function (event) {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = function () {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const MAX_WIDTH = 350; 
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.25);
-                    resolve(compressedBase64);
-                } catch (err) { reject(err); }
-            };
-        };
-    });
-}
-
-async function processAudioFile(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (err) => reject(err);
-    });
-}
-// Persistable Avatar Storage Logic
-async function uploadProfilePicture() {
-    try {
-        let fileInput = document.getElementById('avatar-upload');
-        let file = fileInput.files[0];
-        if (!file) return;
-
-        alert("ဖိုင်ချုံ့နေပါသည်...");
-        let compressedAvatar = await compressImageSafe(file);
-        
-        currentUser.avatar = compressedAvatar;
-        localStorage.setItem('nextgen_avatar', compressedAvatar);
-        
-        document.getElementById('profile-avatar').src = compressedAvatar;
-        document.getElementById('top-bar-avatar').src = compressedAvatar;
-        alert("📸 ပရိုဖိုင်ဓာတ်ပုံကို ရေရှည်မှတ်ဉာဏ်ထဲသို့ မှတ်တမ်းတင်ပြီးပါပြီ။");
-    } catch (error) {
-        alert("❌ ဓာတ်ပုံတင်ရန် အဆင်မပြေပါ။");
-    }
-}
-// 📝 MULTI-CONTENT CREATION ENGINE (Sponsor Ad Media & TikTok Links System Updated)
-async function createNewPost() {
-    let textInput = document.getElementById('post-text');
-    let mediaInput = document.getElementById('post-media-url');
-    let photoInput = document.getElementById('post-photo-input');
-    let audioInput = document.getElementById('post-audio-input');
-    let typeInput = document.getElementById('post-type');
-
-    let text = textInput.value.trim();
-    let mediaUrl = mediaInput.value.trim();
-    let postType = typeInput.value;
-    
-    let photoFile = photoInput.files[0];
-    let audioFile = audioInput.files[0];
-
-    if (text === "" && !photoFile && !audioFile && mediaUrl === "") {
-        alert("မျှဝေချင်တဲ့ အကြောင်းအရာတစ်ခုခု ဖြည့်စွက်ပေးပါဗျာ။");
-        return;
-    }
-
-    if (postType === 'ad_post' && !currentUser.isAdmin) {
-        alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
-        return;
-    }
-
-    let isYoutube = false;
-    let isAudio = postType === 'audio';
-    let isTikTok = postType === 'tiktok_style';
-    let isTikTokLink = false;
-    let secondaryAudioUrl = "";
-
-    // ⚡ TikTok Video URL Checker
-    if (mediaUrl !== "" && (mediaUrl.includes("tiktok.com") || mediaUrl.includes("vt.tiktok"))) {
-        isTikTokLink = true;
-    }
-
-    // YouTube Checker
-    if (mediaUrl !== "" && (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))) {
-        mediaUrl = getYouTubeEmbedUrl(mediaUrl);
-        isYoutube = true;
-        if(postType !== 'ad_post') postType = 'video'; 
-    }
-
-    // Photo File Processing
-    if (photoFile) {
-        alert("ဖိုင်ချုံ့နေပါသည်...");
-        mediaUrl = await compressImageSafe(photoFile);
-        if(!isTikTok && postType !== 'ad_post') postType = 'image';
-    }
-
-    // Audio File Processing
-    if (audioFile) {
-        alert("🎵 အသံဖိုင်ဒေတာကို ထည့်သွင်းနေပါသည်...");
-        let processedAudio = await processAudioFile(audioFile);
-        if (isTikTok) {
-            secondaryAudioUrl = processedAudio; 
-        } else {
-            mediaUrl = processedAudio;
-            isAudio = true;
-        }
-    } else if (isTikTok && mediaUrl !== "" && !isYoutube) {
-        secondaryAudioUrl = mediaUrl; 
-    }
-
-    // 📢 ကြော်ငြာ (Sponsor Ad) ကိုရွေးပြီး တင်သော်လည်း Media Type များအား သေချာခွဲခြားသတ်မှတ်ပေးခြင်း
-    let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile);
-    
-    let newPostObj = {
-        id: Date.now(),
-        author: currentUser.username,
-        content: text,
-        mediaUrl: mediaUrl,
-        audioUrl: secondaryAudioUrl, 
-        isImage: isImageFlag,
-        isAudio: isAudio,
-        isTikTok: isTikTok,
-        isTikTokLink: isTikTokLink,
-        isYoutube: isYoutube,
-        likes: 0,
-        shares: 0,
-        comments: []
-    };
-
-    let targetCollection = 'posts';
-    if (postType === 'video') targetCollection = 'videos';
-    if (postType === 'ad_post') targetCollection = 'ads';
-
-    db.collection(targetCollection).add(newPostObj)
-        .then(() => {
-            alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ R Lay!");
-            resetPostInputs();
-        })
-        .catch(err => alert("❌ Database Error: " + err.message));
-}
-
-function resetPostInputs() {
-    document.getElementById('post-text').value = "";
-    document.getElementById('post-media-url').value = "";
-    document.getElementById('post-photo-input').value = "";
-    document.getElementById('post-audio-input').value = "";
-}
-
-// Auth Engines
-function handleSecureLogin() {
-    let userIn = document.getElementById('login-username');
-    let emailIn = document.getElementById('login-google-email');
-    let passIn = document.getElementById('login-password');
-
-    let uName = userIn.value.trim();
-    let email = emailIn.value.trim();
-    let pWord = passIn.value.trim();
-
-    if(uName === "" || email === "" || pWord === "") {
-        alert("အချက်အလက်အားလုံးကို ဖြည့်စွက်ပေးပါ။");
-        return;
-    }
-
-    auth.signInWithEmailAndPassword(email, pWord)
-        .then(() => { successLoginSetup(uName, email); })
-        .catch((error) => {
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
-                auth.createUserWithEmailAndPassword(email, pWord)
-                    .then(() => { successLoginSetup(uName, email); });
-            } else {
-                alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
-            }
-        });
-}
-
-function successLoginSetup(username, email) {
-    currentUser.isLoggedIn = true;
-    currentUser.username = username;
-    currentUser.email = email;
-
-    document.getElementById('login-container').classList.add('hidden');
-    document.getElementById('profile-container').classList.remove('hidden');
-    document.getElementById('profile-name').innerText = currentUser.username;
-    document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
-    alert(`ကြိုဆိုပါတယ် ${currentUser.username}`);
-}
-
-function handleLogout() {
-    auth.signOut().then(() => {
-        currentUser.isLoggedIn = false;
-        currentUser.username = "ဧည့်သည် (Guest)";
-        currentUser.email = "";
-        currentUser.isAdmin = false;
-        
-        document.getElementById('admin-indicator').classList.add('hidden');
-        document.getElementById('profile-container').classList.add('hidden');
-        document.getElementById('login-container').classList.remove('hidden');
-        alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
-        listenToFirestore(); 
-    });
-}
-
-// Admin Trigger Backdoor
-function triggerAdminSecret() {
-    avatarClickCount++;
-    if (avatarClickCount >= 5) {
-        avatarClickCount = 0;
-        let enteredPIN = prompt("Rlay Exclusive Admin PIN နံပါတ်ကို ရိုက်ထည့်ပါ:");
-        if (enteredPIN === adminPIN) {
-            currentUser.isAdmin = true;
-            document.getElementById('admin-indicator').classList.remove('hidden');
-            alert("👑 Access Granted! ယခု ပို့စ်များကို တိုက်ရိုက်ဖျက်ဆီးနိုင်ပါပြီ။");
-            listenToFirestore(); 
-        } else if (enteredPIN !== null) {
-            alert("❌ PIN နံပါတ် မှားယွင်းနေပါသည်။");
-        }
-    }
-}
-
-// 🗑️ ကြော်ငြာရော၊ ပို့စ်များပါ အပြီးတိုင် ဖျက်ဆီးပေးနိုင်မည့် ခလုတ်စနစ်
-function deletePostPermanently(firebaseKey, type) {
-    if (!currentUser.isAdmin) return;
-    let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
-    if (!confirmDelete) return;
-
-    let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-    db.collection(targetCollection).doc(firebaseKey).delete()
-        .then(() => { alert("🗑️ ပို့စ်အား ဖျက်ဆီးပြီးပါပြီ။"); })
-        .catch(err => alert("❌ Error: " + err.message));
-}
-
-function toggleLike(firebaseKey, type) {
-    let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-    let docRef = db.collection(targetCollection).doc(firebaseKey);
-    docRef.get().then((doc) => {
-        if (doc.exists) {
-            docRef.update({ likes: (doc.data().likes || 0) + 1 });
-        }
-    });
-}
-
-function openCommentKeyboard(firebaseKey, type) {
-    activeCommentPostId = firebaseKey;
-    activeCommentType = type;
-    let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-    
-    db.collection(targetCollection).doc(firebaseKey).onSnapshot((doc) => {
-        if (!doc.exists) return;
-        let item = doc.data();
-        let listContainer = document.getElementById('keyboard-comments-list');
-        listContainer.innerHTML = "";
-
-        if (item.comments && Array.isArray(item.comments)) {
-            item.comments.forEach(comment => {
-                let commentDiv = document.createElement('div');
-                commentDiv.style.background = "#0f172a";
-                commentDiv.style.padding = "8px 12px";
-                commentDiv.style.borderRadius = "8px";
-                commentDiv.style.marginBottom = "6px";
-                commentDiv.innerHTML = `<strong style="color: #38bdf8;">${comment.user}</strong><p style="margin:4px 0 0 0; color:#cbd5e1;">${comment.text}</p>`;
-                listContainer.appendChild(commentDiv);
-            });
-        }
-        document.getElementById('keyboard-comment-box').classList.remove('hidden');
-    });
-}
-
-function submitKeyboardComment() {
-    let input = document.getElementById('keyboard-comment-input');
-    let text = input.value.trim();
-    if (text === "" || activeCommentPostId === null) return;
-
-    let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
-    db.collection(targetCollection).doc(activeCommentPostId).update({
-        comments: firebase.firestore.FieldValue.arrayUnion({
-            id: Date.now(),
-            user: currentUser.username,
-            text: text
-        })
-    }).then(() => { input.value = ""; });
-}
-
-// 📢 Premium Ad Banner Engine
-function renderHomeAdBanner(adsList) {
-    let bannerContainer = document.getElementById('home-ad-banner');
-    if (!bannerContainer || adsList.length === 0) return;
-    bannerContainer.innerHTML = "";
-
-    let premiumAd = adsList[0];
-    let adMediaHTML = "";
-    
-    if(premiumAd.mediaUrl && premiumAd.mediaUrl !== "") {
-        if(premiumAd.isYoutube) {
-            adMediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:8px;">
-                            <iframe src="${premiumAd.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
-                           </div>`;
-        } else if (premiumAd.isTikTokLink) {
-            adMediaHTML = `<div style="margin-top:10px; text-align:center;">
-                            <a href="${premiumAd.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
-                           </div>`;
-        } else {
-            adMediaHTML = `<img src="${premiumAd.mediaUrl}" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-top:8px;">`;
-        }
-    }
-
-    if (premiumAd.isTikTok && premiumAd.audioUrl) {
-        adMediaHTML += `<div style="background:#0f172a; padding:8px; border-radius:8px; margin-top:8px; border:1px dashed #eab308; text-align:center;">
-                        <audio controls style="width:100%; height:32px;"><source src="${premiumAd.audioUrl}" type="audio/mp3"></audio>
-                      </div>`;
-    }
-
-    let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${premiumAd.firebaseKey}', 'ads')" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; float:right;">🗑️ ဖျက်မည်</button>` : "";
-
-    bannerContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #eab308; padding: 12px; border-radius: 14px; position: relative;">
-            ${deleteBtnHTML}
-            <span style="background:#eab308; color:black; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">🔥 SPONSOR AD</span>
-            <strong style="color:#eab308; display:block; font-size:14px;">📢 ${premiumAd.author}</strong>
-            <p style="margin:6px 0 0 0; font-size:13px; color:white; white-space:pre-wrap;">${premiumAd.content}</p>
-            ${adMediaHTML}
-        </div>
-    `;
-}
-
-// Render Core Pipeline Engine
-function renderSection(containerId, dataList, type) {
-    let container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = "";
-
-    if(dataList.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ပို့စ်များ မရှိသေးပါဗျာ။</p>`;
-        return;
-    }
-
-    dataList.forEach(item => {
-        let card = document.createElement('div');
-        card.className = "feed-card";
-        
-        let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${item.firebaseKey}', '${type}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; margin-left:10px;">🗑️ ဖြတ်ပစ်မည်</button>` : "";
-        let mediaHTML = "";
-        
-        if (item.mediaUrl && item.mediaUrl !== "") {
-            if (item.isYoutube) {
-                mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:10px;">
-                                <iframe src="${item.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
-                             </div>`;
-            } else if (item.isTikTokLink) {
-                mediaHTML = `<div style="margin-top:10px; text-align:center;">
-                                <a href="${item.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
-                             </div>`;
-            } else if (item.isImage) {
-                mediaHTML = `<img src="${item.mediaUrl}" style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: cover;">`;
-            } else if (item.isAudio) {
-                mediaHTML = `<div style="background:#0f172a; padding:12px; border-radius:8px; margin-top:10px; text-align:center;">
-                                <audio controls style="width:100%;"><source src="${item.mediaUrl}" type="audio/mp3"></audio>
-                             </div>`;
-            }
-        }
-        
-        if (item.isTikTok && item.audioUrl) {
-            mediaHTML += `<div style="background:#0f172a; padding:10px; border-radius:8px; margin-top:8px; border:1px dashed #38bdf8; text-align:center;">
-                            <span style="font-size:11px; color:#38bdf8; display:block; margin-bottom:5px;">🎵 Background TikTok Music Track</span>
-                            <audio controls style="width:100%; height:32px;"><source src="${item.audioUrl}" type="audio/mp3"></audio>
-                          </div>`;
-        }
-        
-        let commentCount = item.comments ? item.comments.length : 0;
-        let badge = type === 'ads' ? `<span style="color:#eab308; font-size:12px;">[📢 Ad]</span> ` : "";
-        
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <div style="flex:1;"><strong style="color:#38bdf8;">👤 ${badge}${item.author}</strong></div>
-                <div>${deleteBtnHTML}</div>
-            </div>
-            <p style="margin-top: 8px; line-height:1.5; white-space: pre-wrap;">${item.content}</p>
-            ${mediaHTML}
-            <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 8px; border-top: 1px solid #334155; font-size:13px;">
-                <span onclick="toggleLike('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #38bdf8">👍 ${item.likes || 0} Likes</span>
-                <span onclick="openCommentKeyboard('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #94a3b8">💬 ${commentCount} Comments</span>
-                <span style="color: #64748b">🔄 Shares</span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function closeCommentKeyboard() {
-    document.getElementById('keyboard-comment-box').classList.add('hidden');
-    activeCommentPostId = null;
-}
-
-// Global Lifecycle Bootstrapper
-window.onload = function() {
-    document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
-    
-    let savedAvatar = localStorage.getItem('nextgen_avatar');
-    if (savedAvatar) {
-        currentUser.avatar = savedAvatar;
-        document.getElementById('profile-avatar').src = savedAvatar;
-        document.getElementById('top-bar-avatar').src = savedAvatar;
-    }
-    
-    listenToFirestore(); 
-    document.getElementById('keyboard-comment-send-btn').onclick = submitKeyboardComment;
-};
-
-// UI CONTROL LOGIC FOR SEARCH OVERLAY
-function goToSearchPage() {
-    const searchOverlay = document.getElementById('search-page-overlay');
-    if (searchOverlay) {
-        searchOverlay.style.display = 'flex';
-        document.getElementById('search-friend-input').value = "";
-        document.getElementById('search-results-container').innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
-        document.getElementById('search-friend-input').focus();
-    }
-}
-
-function closeSearchPage() {
-    const searchOverlay = document.getElementById('search-page-overlay');
-    if (searchOverlay) {
-        searchOverlay.style.display = 'none';
-    }
-}
-
-// FIREBASE REALTIME FRIENDS SEARCH ENGINE
-function searchFriendRealtime() {
-    let queryText = document.getElementById('search-friend-input').value.trim();
-    let resultsContainer = document.getElementById('search-results-container');
-    
-    if (queryText === "") {
-        resultsContainer.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
-        return;
-    }
-
-    resultsContainer.innerHTML = `<p style="text-align:center; color:#38bdf8; padding:20px;">ရှာဖွေနေပါသည်...</p>`;
-
-    db.collection('posts')
-        .where('author', '>=', queryText)
-        .where('author', '<=', queryText + '\uf8ff')
-        .get()
-        .then((snapshot) => {
-            resultsContainer.innerHTML = "";
-            let foundUsers = [];
-
-            snapshot.forEach((doc) => {
-                let data = doc.data();
-                if (data.author && !foundUsers.includes(data.author)) {
-                    foundUsers.push(data.author);
-                }
-            });
-
-            if (foundUsers.length === 0) {
-                resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">❌ ကိုက်ညီသည့် သူငယ်ချင်း မတွေ့ပါဗျာ။</p>`;
-                return;
-            }
-
-            foundUsers.forEach(username => {
-                let userCard = document.createElement('div');
-                userCard.style.display = "flex";
-                userCard.style.alignItems = "center";
-                userCard.style.gap = "15px";
-                userCard.style.padding = "12px 15px";
-                userCard.style.background = "#1e293b";
-                userCard.style.borderRadius = "8px";
-                userCard.style.marginBottom = "10px";
-                userCard.style.cursor = "pointer";
-                userCard.style.border = "1px solid #334155";
-                
-                userCard.innerHTML = `
-                    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #38bdf8;">
-                    <div>
-                        <strong style="color: white; font-size: 15px;">👤 ${username}</strong>
-                        <span style="display: block; font-size: 11px; color: #38bdf8; margin-top: 2px;">NextGen Active Member</span>
-                    </div>
-                `;
-                
-                userCard.onclick = function() {
-                    alert(`သူငယ်ချင်း ${username} ၏ Profile စနစ်ကို ချိတ်ဆက်ရန် ပြင်ဆင်နေပါသည် R Lay။`);
-                };
-                
-                resultsContainer.appendChild(userCard);
-            });
-        })
-        .catch((error) => {
-            console.error("Search Engine Error: ", error);
-            resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">ဒေတာဘေ့စ် ရှာဖွေရန် အဆင်မပြေပါ။</p>`;
-        });
-}
-          /* NextGen App Stylesheet */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background-color: #0f172a;
-    color: white;
-}
-
-/* ⚠️ ဒီအပိုင်းက စာမျက်နှာတွေကို ပိတ်/ဖွင့် လုပ်ပေးတာဖြစ်လို့ အတိအကျ ထည့်ပေးပါ */
-.page-section {
-    display: block; /* ပုံမှန်အချိန်တွင် ပြရန် */
-    padding: 15px;
-}
-
-.page-section.hidden {
-    display: none !important; /* hidden ပါလာလျှင် လုံးဝဖျောက်ထားရန် */
-}
-
-/* Feed Cards */
-.feed-card {
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #334155;
-}
-
-/* Navigation Buttons */
-.nav-item {
-    background: none;
-    border: none;
-    color: #64748b;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: all 0.2s ease;
-}
-
-.nav-item.active {
-    color: #38bdf8;
-    background: #1e293b;
-}
-
-/* Comment Keyboard Panel */
-.comment-keyboard-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1e293b;
-    padding: 15px;
-    border-top: 1px solid #334155;
-    border-radius: 16px 16px 0 0;
-    z-index: 200;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
-}
-
-.comment-keyboard-panel.hidden {
-    display: none !important;
-}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen App</title>
-    <!-- CSS ဖိုင်နဲ့ ချိတ်ဆက်ထားခြင်း -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <!-- Top Bar -->
-    <div style="padding: 12px 15px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100;">
-        <span id="app-logo" onclick="handleLogoClick()" style="font-size: 22px; font-weight: bold; color: #38bdf8; cursor: pointer; user-select: none;">
-            NextGen
-        </span>
-        <div onclick="switchPage('profile', document.getElementById('nav-profile-btn'))" style="cursor: pointer;">
-            <img id="top-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
-        </div>
-    </div>
-
-    <!-- Main Content Wrapper -->
-    <main class="content-wrapper" style="padding-bottom: 80px;">
-        
-        <!-- 1. HOME Сာမျက်နှာ -->
-        <section id="feed-page" class="page-section">
-            <div id="post-input-box" style="flex-direction: column; gap: 10px; border-radius: 16px; display: flex; background: #1e293b; padding: 15px; margin-bottom: 20px;">
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px;">
-                    <label style="color: #38bdf8; font-size: 14px; font-weight: bold;">🖼️ Multimedia Post</label>
-                    <button onclick="alert('Database ချိတ်ဆက်ပြီးပါက တင်နိုင်ပါမည်။')" style="background: #38bdf8; color: black; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">Post</button>
-                </div>
-            </div>
-            <div id="feed-container"></div>
-        </section>
-
-        <!-- 2. VIDEO စာမျက်နှာ -->
-        <section id="video-page" class="page-section hidden">
-            <h3 style="color: #38bdf8; text-align: center; margin-bottom: 15px;">🎥 NextGen Videos</h3>
-            <div id="video-container"></div>
-        </section>
-
-        <!-- 3. ADS စာမျက်နှာ -->
-        <section id="ads-page" class="page-section hidden">
-            <h3 style="color: #eab308; text-align: center; margin-bottom: 15px;">💰 Sponsor Ads</h3>
-            <div id="ads-container"></div>
-        </section>
-
-        <!-- 4. PROFILE စာမျက်နှာ -->
-        <section id="profile-page" class="page-section hidden">
-            <h3 style="margin-bottom: 20px; color: #38bdf8;">မန်ဘာအကောင့်နှင့် ပရိုဖိုင်</h3>
-            
-            <!-- Login Box -->
-            <div id="login-container" class="feed-card">
-                <h4 style="margin-top: 0; color: #38bdf8; margin-bottom: 15px;">အကောင့်ဝင်ရန်</h4>
-                <input type="text" id="login-username" placeholder="အသုံးပြုသူအမည် (Username)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box;">
-                <input type="password" id="login-password" placeholder="လျှို့ဝှက်နံပါတ် (Password)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
-                <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Login ဝင်မည်</button>
-            </div>
-
-            <!-- Profile Info Box -->
-            <div id="profile-container" class="feed-card hidden" style="text-align: center;">
-                <div style="position: relative; display: inline-block; margin-bottom: 15px;">
-                    <img id="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #38bdf8;">
-                    <label for="avatar-upload" style="position: absolute; bottom: 0; right: 0; background: #38bdf8; color: black; padding: 6px; border-radius: 50%; cursor: pointer; font-size: 12px;">📷</label>
-                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadProfilePicture()">
-                </div>
-                <h3 id="profile-name" style="margin: 5px 0; color: white;">R Lay</h3>
-                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">NextGen Premium Member</p>
-                <button onclick="handleLogout()" style="background: #ef4444; color: white; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">အကောင့်မှ ထွက်မည်</button>
-            </div>
-        </section>
-
-        <!-- Admin Page -->
-        <section id="admin-page" class="page-section hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: #ef4444;">Admin Panel</h3>
-                <button onclick="exitAdminPanel()" style="background: #334155; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">ထွက်မည် ↩</button>
-            </div>
-            <div id="admin-moderation-list"></div>
-        </section>
-
-    </main>
-
-    <!-- Comment Keyboard Box -->
-    <div id="keyboard-comment-box" class="comment-keyboard-panel hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 13px; color: #38bdf8; font-weight: bold;">💬 ကွန်မန့်ပေးပို့ရန်</span>
-            <span onclick="closeCommentKeyboard()" style="cursor: pointer; color: #ef4444; font-size: 14px; font-weight: bold;">ပိတ်မည် ✕</span>
-        </div>
-        <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." style="flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
-            <button id="keyboard-comment-send-btn" style="background: #38bdf8; color: black; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Send</button>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 90;">
-        <button class="nav-item active" onclick="switchPage('feed', this)">Home</button>
-        <button class="nav-item" onclick="switchPage('video', this)">🎥 Video</button>
-        <button class="nav-item" onclick="switchPage('ads', this)">📢 Ads</button>
-        <button id="nav-profile-btn" class="nav-item" onclick="switchPage('profile', this)">👤 Profile</button>
-    </nav>
-
-    <script src="admin.js"></script>
-</body>
-                      </html>
-/* NextGen App Stylesheet */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background-color: #0f172a;
-    color: white;
-}
-
-/* ⚠️ ဒီအပိုင်းက စာမျက်နှာတွေကို ပိတ်/ဖွင့် လုပ်ပေးတာဖြစ်လို့ အတိအကျ ထည့်ပေးပါ */
-.page-section {
-    display: block; /* ပုံမှန်အချိန်တွင် ပြရန် */
-    padding: 15px;
-}
-
-.page-section.hidden {
-    display: none !important; /* hidden ပါလာလျှင် လုံးဝဖျောက်ထားရန် */
-}
-
-/* Feed Cards */
-.feed-card {
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #334155;
-}
-
-/* Navigation Buttons */
-.nav-item {
-    background: none;
-    border: none;
-    color: #64748b;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: all 0.2s ease;
-}
-
-.nav-item.active {
-    color: #38bdf8;
-    background: #1e293b;
-}
-
-/* Comment Keyboard Panel */
-.comment-keyboard-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1e293b;
-    padding: 15px;
-    border-top: 1px solid #334155;
-    border-radius: 16px 16px 0 0;
-    z-index: 200;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
-}
-
-.comment-keyboard-panel.hidden {
-    display: none !important;
-}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen App</title>
-    <!-- CSS ဖိုင်နဲ့ ချိတ်ဆက်ထားခြင်း -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <!-- Top Bar -->
-    <div style="padding: 12px 15px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100;">
-        <span id="app-logo" onclick="handleLogoClick()" style="font-size: 22px; font-weight: bold; color: #38bdf8; cursor: pointer; user-select: none;">
-            NextGen
-        </span>
-        <div onclick="switchPage('profile', document.getElementById('nav-profile-btn'))" style="cursor: pointer;">
-            <img id="top-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8;">
-        </div>
-    </div>
-
-    <!-- Main Content Wrapper -->
-    <main class="content-wrapper" style="padding-bottom: 80px;">
-        
-        <!-- 1. HOME Сာမျက်နှာ -->
-        <section id="feed-page" class="page-section">
-            <div id="post-input-box" style="flex-direction: column; gap: 10px; border-radius: 16px; display: flex; background: #1e293b; padding: 15px; margin-bottom: 20px;">
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px;">
-                    <label style="color: #38bdf8; font-size: 14px; font-weight: bold;">🖼️ Multimedia Post</label>
-                    <button onclick="alert('Database ချိတ်ဆက်ပြီးပါက တင်နိုင်ပါမည်။')" style="background: #38bdf8; color: black; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">Post</button>
-                </div>
-            </div>
-            <div id="feed-container"></div>
-        </section>
-
-        <!-- 2. VIDEO စာမျက်နှာ -->
-        <section id="video-page" class="page-section hidden">
-            <h3 style="color: #38bdf8; text-align: center; margin-bottom: 15px;">🎥 NextGen Videos</h3>
-            <div id="video-container"></div>
-        </section>
-
-        <!-- 3. ADS စာမျက်နှာ -->
-        <section id="ads-page" class="page-section hidden">
-            <h3 style="color: #eab308; text-align: center; margin-bottom: 15px;">💰 Sponsor Ads</h3>
-            <div id="ads-container"></div>
-        </section>
-
-        <!-- 4. PROFILE စာမျက်နှာ -->
-        <section id="profile-page" class="page-section hidden">
-            <h3 style="margin-bottom: 20px; color: #38bdf8;">မန်ဘာအကောင့်နှင့် ပရိုဖိုင်</h3>
-            
-            <!-- Login Box -->
-            <div id="login-container" class="feed-card">
-                <h4 style="margin-top: 0; color: #38bdf8; margin-bottom: 15px;">အကောင့်ဝင်ရန်</h4>
-                <input type="text" id="login-username" placeholder="အသုံးပြုသူအမည် (Username)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box;">
-                <input type="password" id="login-password" placeholder="လျှို့ဝှက်နံပါတ် (Password)" style="width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
-                <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: #38bdf8; color: black; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Login ဝင်မည်</button>
-            </div>
-
-            <!-- Profile Info Box -->
-            <div id="profile-container" class="feed-card hidden" style="text-align: center;">
-                <div style="position: relative; display: inline-block; margin-bottom: 15px;">
-                    <img id="profile-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #38bdf8;">
-                    <label for="avatar-upload" style="position: absolute; bottom: 0; right: 0; background: #38bdf8; color: black; padding: 6px; border-radius: 50%; cursor: pointer; font-size: 12px;">📷</label>
-                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadProfilePicture()">
-                </div>
-                <h3 id="profile-name" style="margin: 5px 0; color: white;">R Lay</h3>
-                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">NextGen Premium Member</p>
-                <button onclick="handleLogout()" style="background: #ef4444; color: white; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">အကောင့်မှ ထွက်မည်</button>
-            </div>
-        </section>
-
-        <!-- Admin Page -->
-        <section id="admin-page" class="page-section hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0; color: #ef4444;">Admin Panel</h3>
-                <button onclick="exitAdminPanel()" style="background: #334155; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">ထွက်မည် ↩</button>
-            </div>
-            <div id="admin-moderation-list"></div>
-        </section>
-
-    </main>
-
-    <!-- Comment Keyboard Box -->
-    <div id="keyboard-comment-box" class="comment-keyboard-panel hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 13px; color: #38bdf8; font-weight: bold;">💬 ကွန်မန့်ပေးပို့ရန်</span>
-            <span onclick="closeCommentKeyboard()" style="cursor: pointer; color: #ef4444; font-size: 14px; font-weight: bold;">ပိတ်မည် ✕</span>
-        </div>
-        <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." style="flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;">
-            <button id="keyboard-comment-send-btn" style="background: #38bdf8; color: black; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Send</button>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav" style="position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; z-index: 90;">
-        <button class="nav-item active" onclick="switchPage('feed', this)">Home</button>
-        <button class="nav-item" onclick="switchPage('video', this)">🎥 Video</button>
-        <button class="nav-item" onclick="switchPage('ads', this)">📢 Ads</button>
-        <button id="nav-profile-btn" class="nav-item" onclick="switchPage('profile', this)">👤 Profile</button>
-    </nav>
-
-    <script src="admin.js"></script>
-</body>
-    </html>
-                  
-
