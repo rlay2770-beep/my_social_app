@@ -179,18 +179,26 @@
             box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
         }
 
-        .search-overlay {
+        .search-overlay, .profile-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0f172a;
+            background: rgba(15, 23, 42, 0.95);
             z-index: 1000;
             display: none;
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-overlay {
+            justify-content: flex-start;
+            align-items: stretch;
+            background: #0f172a;
         }
 
         /* Chat System UI */
@@ -221,6 +229,7 @@
             width: fit-content;
             margin-bottom: 8px;
             font-size: 13px;
+            word-break: break-word;
         }
 
         .chat-bubble-other {
@@ -233,6 +242,7 @@
             width: fit-content;
             margin-bottom: 8px;
             font-size: 13px;
+            word-break: break-word;
         }
 
         /* Helper Utilities */
@@ -279,7 +289,7 @@
             <div id="post-input-box" class="post-box">
                 <label class="label-blue">📝 အသစ်တင်မည်</label>
                 
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." class="input-field">
+                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ..." class="input-field">
                 <input type="text" id="post-media-url" placeholder="ဓာတ်ပုံ/ဗီဒီယို/သီချင်း Link (YouTube/TikTok/Direct Link)" class="input-field font-small">
                 
                 <!-- Dual File Selector Panel -->
@@ -333,8 +343,8 @@
 
             <!-- Active Online Friends Section -->
             <div style="background: #1e293b; padding: 10px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155;">
-                <span class="sub-label" style="margin-bottom: 6px;">🟢 လိုင်းတက်နေသူများ (Online Users):</span>
-                <div id="online-users-bar" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;"></div>
+                <span class="sub-label" style="margin-bottom: 6px;">🟢 လိုင်းတက်နေသူများ (Online Users) - နှိပ်၍ တိုက်ရိုက် Chat ပါ:</span>
+                <div id="online-users-bar" style="display: flex; gap: 12px; overflow-x: auto; padding: 5px 0;"></div>
             </div>
 
             <!-- Chat Area Box -->
@@ -416,6 +426,17 @@
         </div>
     </div>
 
+    <!-- Friend Profile View Modal -->
+    <div id="friend-profile-modal" class="profile-modal-overlay">
+        <div class="feed-card" style="width: 280px; text-align: center; position: relative;">
+            <span onclick="closeFriendProfile()" style="position: absolute; right: 15px; top: 10px; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 18px;">✕</span>
+            <img id="modal-friend-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-large" style="margin-top: 10px;">
+            <h3 id="modal-friend-name" style="margin: 10px 0 5px 0; color: white;">Friend Name</h3>
+            <p id="modal-friend-status" style="margin: 0 0 15px 0; font-size: 12px;"></p>
+            <button id="modal-friend-chat-btn" class="btn-primary full-width">💬 Chat သို့သွားမည်</button>
+        </div>
+    </div>
+
     <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchPage('feed', this)">Home</button>
@@ -458,7 +479,7 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); 
-        const rtdb = firebase.database(); // 🔥 Realtime Database Instance
+        const rtdb = firebase.database(); 
         const auth = firebase.auth();
 
         let currentUser = {
@@ -473,7 +494,11 @@
         let activeCommentPostId = null;
         let activeCommentType = 'feed';
         let avatarClickCount = 0;
-        let activeChatPartner = "Lounge"; // Default is public chat
+        let activeChatPartner = "Lounge"; 
+
+        function sanitizeName(name) {
+            return name ? name.replace(/[.#$/[\]]/g, "_") : "";
+        }
 
         function adjustUploadUI() {
             let type = document.getElementById('post-type').value;
@@ -514,7 +539,7 @@
         /* 🟢 REALTIME ONLINE STATUS ENGINE */
         function initOnlineStatus(username) {
             if (!username) return;
-            const userSanitized = username.replace(/[.#$/[\]]/g, "_");
+            const userSanitized = sanitizeName(username);
             const userStatusRef = rtdb.ref('/status/' + userSanitized);
             const connectedRef = rtdb.ref('.info/connected');
 
@@ -522,6 +547,8 @@
                 if (snap.val() === false) return;
 
                 userStatusRef.onDisconnect().set({
+                    username: username,
+                    avatar: currentUser.avatar,
                     state: 'offline',
                     last_changed: firebase.database.ServerValue.TIMESTAMP
                 }).then(() => {
@@ -547,10 +574,10 @@
                 let loungeBadge = document.createElement('div');
                 loungeBadge.style.textAlign = "center";
                 loungeBadge.style.cursor = "pointer";
-                loungeBadge.style.minWidth = "50px";
+                loungeBadge.style.minWidth = "55px";
                 loungeBadge.innerHTML = `
-                    <div style="width:38px; height:38px; border-radius:50%; background:#0284c7; display:flex; align-items:center; justify-content:center; font-size:18px; margin:auto;">🌐</div>
-                    <span style="font-size:10px; color:#38bdf8; display:block; margin-top:2px;">Lounge</span>
+                    <div style="width:42px; height:42px; border-radius:50%; background:#0284c7; display:flex; align-items:center; justify-content:center; font-size:20px; margin:auto;">🌐</div>
+                    <span style="font-size:11px; color:#38bdf8; display:block; margin-top:3px; font-weight:bold;">Lounge</span>
                 `;
                 loungeBadge.onclick = () => openDirectChat('Lounge');
                 onlineBar.appendChild(loungeBadge);
@@ -560,23 +587,54 @@
 
                 Object.keys(data).forEach(key => {
                     let userObj = data[key];
-                    if (userObj.state === 'online' && userObj.username !== currentUser.username) {
+                    if (userObj.username && userObj.username !== currentUser.username) {
+                        let isOnline = userObj.state === 'online';
                         let userBadge = document.createElement('div');
                         userBadge.style.textAlign = "center";
                         userBadge.style.cursor = "pointer";
-                        userBadge.style.minWidth = "50px";
+                        userBadge.style.minWidth = "55px";
+                        
+                        let dotClass = isOnline ? "online-dot" : "offline-dot";
+                        let userAvatar = userObj.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
                         userBadge.innerHTML = `
-                            <div style="position:relative; width:38px; height:38px; margin:auto;">
-                                <img src="${userObj.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:1px solid #38bdf8;">
-                                <span class="online-dot" style="position:absolute; bottom:0; right:0; border:1.5px solid #0f172a;"></span>
+                            <div style="position:relative; width:42px; height:42px; margin:auto;">
+                                <img src="${userAvatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #38bdf8;">
+                                <span class="${dotClass}" style="position:absolute; bottom:0; right:0; border:2px solid #0f172a;"></span>
                             </div>
-                            <span style="font-size:10px; color:white; display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55px;">${userObj.username}</span>
+                            <span style="font-size:11px; color:white; display:block; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;">${userObj.username}</span>
                         `;
-                        userBadge.onclick = () => openDirectChat(userObj.username);
+                        userBadge.onclick = () => viewFriendProfile(userObj.username, userAvatar, isOnline);
                         onlineBar.appendChild(userBadge);
                     }
                 });
             });
+        }
+
+        /* 👤 FRIEND PROFILE MODAL VIEW */
+        function viewFriendProfile(username, avatar, isOnline) {
+            document.getElementById('modal-friend-avatar').src = avatar;
+            document.getElementById('modal-friend-name').innerText = username;
+            
+            let statusEl = document.getElementById('modal-friend-status');
+            if (isOnline) {
+                statusEl.innerHTML = `<span class="online-dot"></span> <span style="color:#22c55e;">Online (လိုင်းတက်နေသည်)</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="offline-dot"></span> <span style="color:#64748b;">Offline (လိုင်းမရှိပါ)</span>`;
+            }
+
+            let chatBtn = document.getElementById('modal-friend-chat-btn');
+            chatBtn.onclick = function() {
+                closeFriendProfile();
+                switchPage('chat', document.querySelectorAll('.nav-item')[2]);
+                openDirectChat(username);
+            };
+
+            document.getElementById('friend-profile-modal').style.display = 'flex';
+        }
+
+        function closeFriendProfile() {
+            document.getElementById('friend-profile-modal').style.display = 'none';
         }
 
         /* 💬 REALTIME LIVE CHAT SYSTEM */
@@ -589,10 +647,9 @@
                 titleHeader.innerText = "💬 NextGen Public Lounge";
                 partnerStatus.innerHTML = "";
             } else {
-                titleHeader.innerText = "💬 Chat with " + targetUsername;
+                titleHeader.innerText = "💬 " + targetUsername;
                 
-                // Realtime Online Status Check
-                const sanitized = targetUsername.replace(/[.#$/[\]]/g, "_");
+                const sanitized = sanitizeName(targetUsername);
                 rtdb.ref('/status/' + sanitized).on('value', snap => {
                     let val = snap.val();
                     if (val && val.state === 'online') {
@@ -606,10 +663,10 @@
         }
 
         function getChatRoomPath() {
-            if (activeChatPartner === "Lounge") return "/chats/public_lounge";
+            if (activeChatPartner === "Lounge") return "chats/public_lounge";
             let users = [currentUser.username, activeChatPartner].sort();
-            let roomKey = users[0].replace(/[.#$/[\]]/g, "_") + "_" + users[1].replace(/[.#$/[\]]/g, "_");
-            return "/chats/private_" + roomKey;
+            let roomKey = sanitizeName(users[0]) + "_" + sanitizeName(users[1]);
+            return "chats/private_" + roomKey;
         }
 
         function listenToChatMessages() {
@@ -617,7 +674,7 @@
             if (!chatBox) return;
 
             let path = getChatRoomPath();
-            rtdb.ref(path).limitToLast(40).on('value', snapshot => {
+            rtdb.ref(path).limitToLast(50).on('value', snapshot => {
                 chatBox.innerHTML = "";
                 let data = snapshot.val();
                 if (!data) {
@@ -631,11 +688,21 @@
                     let bubble = document.createElement('div');
                     bubble.className = isMe ? "chat-bubble-me" : "chat-bubble-other";
                     
-                    let senderLabel = (!isMe && activeChatPartner === "Lounge") ? `<strong style="font-size:10px; color:#38bdf8; display:block;">${msg.sender}</strong>` : "";
+                    let senderLabel = (!isMe && activeChatPartner === "Lounge") ? `<strong style="font-size:10px; color:#38bdf8; display:block; cursor:pointer;" onclick="viewFriendProfileByName('${msg.sender}')">${msg.sender}</strong>` : "";
                     bubble.innerHTML = `${senderLabel}${msg.text}`;
                     chatBox.appendChild(bubble);
                 });
                 chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function viewFriendProfileByName(username) {
+            const sanitized = sanitizeName(username);
+            rtdb.ref('/status/' + sanitized).once('value', snap => {
+                let val = snap.val();
+                let avatar = (val && val.avatar) ? val.avatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                let isOnline = val && val.state === 'online';
+                viewFriendProfile(username, avatar, isOnline);
             });
         }
 
@@ -657,6 +724,8 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
                 input.value = "";
+            }).catch(err => {
+                alert("❌ စာပို့မရပါ: " + err.message);
             });
         }
 
@@ -854,7 +923,7 @@
 
             db.collection(targetCollection).add(newPostObj)
                 .then(() => {
-                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ R Lay!");
+                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ!");
                     resetPostInputs();
                 })
                 .catch(err => alert("❌ Database Error: " + err.message));
@@ -907,7 +976,8 @@
                         alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
                     }
                 });
-    }
+        }
+
         function successLoginSetup(username, email) {
             currentUser.isLoggedIn = true;
             currentUser.username = username;
@@ -930,8 +1000,10 @@
 
         function handleLogout() {
             if(currentUser.username) {
-                const sanitized = currentUser.username.replace(/[.#$/[\]]/g, "_");
+                const sanitized = sanitizeName(currentUser.username);
                 rtdb.ref('/status/' + sanitized).set({
+                    username: currentUser.username,
+                    avatar: currentUser.avatar,
                     state: 'offline',
                     last_changed: firebase.database.ServerValue.TIMESTAMP
                 });
@@ -973,7 +1045,7 @@
 
         function deletePostPermanently(firebaseKey, type) {
             if (!currentUser.isAdmin) return;
-            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
+            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား?");
             if (!confirmDelete) return;
 
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -1016,7 +1088,7 @@
                         commentDiv.style.padding = "8px 12px";
                         commentDiv.style.borderRadius = "8px";
                         commentDiv.style.marginBottom = "6px";
-                        commentDiv.innerHTML = `<strong style="color: #38bdf8;">${comment.user}</strong><p style="margin:4px 0 0 0; color:#cbd5e1;">${comment.text}</p>`;
+                        commentDiv.innerHTML = `<strong style="color: #38bdf8; cursor:pointer;" onclick="viewFriendProfileByName('${comment.user}')">${comment.user}</strong><p style="margin:4px 0 0 0; color:#cbd5e1;">${comment.text}</p>`;
                         listContainer.appendChild(commentDiv);
                     });
                 }
@@ -1073,7 +1145,7 @@
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #eab308; padding: 12px; border-radius: 14px; position: relative;">
                     ${deleteBtnHTML}
                     <span style="background:#eab308; color:black; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">🔥 SPONSOR AD</span>
-                    <strong style="color:#eab308; display:block; font-size:14px;">📢 ${premiumAd.author}</strong>
+                    <strong style="color:#eab308; display:block; font-size:14px; cursor:pointer;" onclick="viewFriendProfileByName('${premiumAd.author}')">📢 ${premiumAd.author}</strong>
                     <p style="margin:6px 0 0 0; font-size:13px; color:white; white-space:pre-wrap;">${premiumAd.content}</p>
                     ${adMediaHTML}
                 </div>
@@ -1127,7 +1199,7 @@
                 
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                        <div style="flex:1;"><strong style="color:#38bdf8;">👤 ${badge}${item.author}</strong></div>
+                        <div style="flex:1;"><strong style="color:#38bdf8; cursor:pointer;" onclick="viewFriendProfileByName('${item.author}')">👤 ${badge}${item.author}</strong></div>
                         <div>${deleteBtnHTML}</div>
                     </div>
                     <p style="margin-top: 8px; line-height:1.5; white-space: pre-wrap;">${item.content}</p>
@@ -1208,67 +1280,53 @@
 
             resultsContainer.innerHTML = `<p style="text-align:center; color:#38bdf8; padding:20px;">ရှာဖွေနေပါသည်...</p>`;
 
-            db.collection('posts')
-                .where('author', '>=', queryText)
-                .where('author', '<=', queryText + '\uf8ff')
-                .get()
-                .then((snapshot) => {
-                    resultsContainer.innerHTML = "";
-                    let foundUsers = [];
+            rtdb.ref('/status').once('value', snapshot => {
+                resultsContainer.innerHTML = "";
+                let data = snapshot.val();
+                let found = false;
 
-                    snapshot.forEach((doc) => {
-                        let data = doc.data();
-                        if (data.author && !foundUsers.includes(data.author)) {
-                            foundUsers.push(data.author);
-                        }
-                    });
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        let userObj = data[key];
+                        if (userObj.username && userObj.username.toLowerCase().includes(queryText.toLowerCase())) {
+                            found = true;
+                            let userCard = document.createElement('div');
+                            userCard.style.display = "flex";
+                            userCard.style.alignItems = "center";
+                            userCard.style.gap = "15px";
+                            userCard.style.padding = "12px 15px";
+                            userCard.style.background = "#1e293b";
+                            userCard.style.borderRadius = "8px";
+                            userCard.style.marginBottom = "10px";
+                            userCard.style.cursor = "pointer";
+                            userCard.style.border = "1px solid #334155";
 
-                    if (foundUsers.length === 0) {
-                        resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">❌ ကိုက်ညီသည့် သူငယ်ချင်း မတွေ့ပါဗျာ။</p>`;
-                        return;
-                    }
-
-                    foundUsers.forEach(username => {
-                        let userCard = document.createElement('div');
-                        userCard.style.display = "flex";
-                        userCard.style.alignItems = "center";
-                        userCard.style.gap = "15px";
-                        userCard.style.padding = "12px 15px";
-                        userCard.style.background = "#1e293b";
-                        userCard.style.borderRadius = "8px";
-                        userCard.style.marginBottom = "10px";
-                        userCard.style.cursor = "pointer";
-                        userCard.style.border = "1px solid #334155";
-                        
-                        // Online Status Indicator for Search Results
-                        const sanitized = username.replace(/[.#$/[\]]/g, "_");
-                        rtdb.ref('/status/' + sanitized).once('value', snap => {
-                            let val = snap.val();
-                            let isOnline = val && val.state === 'online';
+                            let isOnline = userObj.state === 'online';
                             let dotHTML = isOnline ? `<span class="online-dot"></span> <span style="font-size:11px; color:#22c55e;">Online</span>` : `<span class="offline-dot"></span> <span style="font-size:11px; color:#64748b;">Offline</span>`;
+                            let avatarUrl = userObj.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
                             userCard.innerHTML = `
-                                <img src="${(val && val.avatar) ? val.avatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #38bdf8; object-fit:cover;">
+                                <img src="${avatarUrl}" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #38bdf8; object-fit:cover;">
                                 <div>
-                                    <strong style="color: white; font-size: 15px;">👤 ${username}</strong>
+                                    <strong style="color: white; font-size: 15px;">👤 ${userObj.username}</strong>
                                     <div style="margin-top:2px;">${dotHTML}</div>
                                 </div>
                             `;
-                        });
-                        
-                        userCard.onclick = function() {
-                            closeSearchPage();
-                            switchPage('chat', document.querySelectorAll('.nav-item')[2]);
-                            openDirectChat(username);
-                        };
-                        
-                        resultsContainer.appendChild(userCard);
+
+                            userCard.onclick = function() {
+                                closeSearchPage();
+                                viewFriendProfile(userObj.username, avatarUrl, isOnline);
+                            };
+
+                            resultsContainer.appendChild(userCard);
+                        }
                     });
-                })
-                .catch((error) => {
-                    console.error("Search Engine Error: ", error);
-                    resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">ဒေတာဘေ့စ် ရှာဖွေရန် အဆင်မပြေပါ။</p>`;
-                });
+                }
+
+                if (!found) {
+                    resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">❌ ကိုက်ညီသည့် သူငယ်ချင်း မတွေ့ပါဗျာ။</p>`;
+                }
+            });
         }
     </script>
 </body>
