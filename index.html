@@ -1329,47 +1329,113 @@
             });
         }
     </script>
-    <!-- ✅ အစားထိုးရမယ့် ကုဒ်အသစ် -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+        <!-- ✅ ပြင်ဆင်ပြီးသား FIREBASE SDK နှင့် CHAT SCRIPT -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
-    authDomain: "my-social-app-13d41.firebaseapp.com",
-    databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
-    projectId: "my-social-app-13d41",
-    storageBucket: "my-social-app-13d41.firebasestorage.app",
-    messagingSenderId: "929198714349",
-    appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
-    measurementId: "G-2QDS45V6VL"
-  };
+    <script>
+        // 🌐 Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
+            authDomain: "my-social-app-13d41.firebaseapp.com",
+            databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
+            projectId: "my-social-app-13d41",
+            storageBucket: "my-social-app-13d41.firebasestorage.app",
+            messagingSenderId: "929198714349",
+            appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
+            measurementId: "G-2QDS45V6VL"
+        };
 
-  if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-  }
-  const database = firebase.database();
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
-  function sendChatMessage() {
-      const msgInput = document.getElementById('chat-msg');
-      if (!msgInput) return;
-      
-      const messageText = msgInput.value.trim();
-      if (messageText === "") return;
+        // ⚠️ App တစ်ခုလုံးအတွက် Realtime Database ကို rtdb အဖြစ် သတ်မှတ်ပါသည်
+        const rtdb = firebase.database();
+        const database = rtdb; 
 
-      database.ref('public_chat').push({
-          text: messageText,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-      })
-      .then(() => {
-          msgInput.value = "";
-          alert("စာပို့တာ အောင်မြင်ပါတယ်ဗျာ!");
-      })
-      .catch((error) => {
-          alert("🚨 စာပို့မရသည့် Error: " + error.message);
-      });
-  }
-</script>
-    
+        // 💬 ၁။ စာပို့သည့် Function
+        function sendChatMessage() {
+            const msgInput = document.getElementById('chat-msg');
+            if (!msgInput) {
+                alert("🚨 'chat-msg' ဆိုသည့် Input ID ကို မတွေ့ပါဗျာ။");
+                return;
+            }
+            
+            const messageText = msgInput.value.trim();
+            if (messageText === "") return;
+
+            // လက်ရှိ User နာမည်ယူခြင်း
+            let senderName = (typeof currentUser !== 'undefined' && currentUser.username) ? currentUser.username : "Guest";
+
+            // Realtime Database ထို့ စာပို့ခြင်း
+            rtdb.ref('public_chat').push({
+                sender: senderName,
+                text: messageText,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            })
+            .then(() => {
+                msgInput.value = ""; // စာပို့အောင်မြင်ပါက Textbox ကို ရှင်းမည်
+            })
+            .catch((error) => {
+                alert("🚨 စာပို့မရသည့် အကြောင်းအရင်း: " + error.message);
+            });
+        }
+
+        // 💬 ၂။ ရောက်လာသော စာများကို Realtime တိုက်ရိုက် ပြသပေးမည့် Listener
+        function listenToGlobalChat() {
+            const container = document.getElementById('msg-container'); // သင့် Chat Box Container ID
+            if (!container) return;
+
+            rtdb.ref('public_chat').limitToLast(30).on('value', snapshot => {
+                container.innerHTML = "";
+                let data = snapshot.val();
+
+                if (!data) {
+                    container.innerHTML = `<div style="text-align:center; color:#64748b; padding:10px;">စကားပြောဆိုမှု မရှိသေးပါဗျာ။</div>`;
+                    return;
+                }
+
+                Object.keys(data).forEach(key => {
+                    let msg = data[key];
+                    let myName = (typeof currentUser !== 'undefined' && currentUser.username) ? currentUser.username : "Guest";
+                    let isMe = (msg.sender === myName);
+
+                    let msgDiv = document.createElement('div');
+                    msgDiv.style.margin = "8px 0";
+                    msgDiv.style.padding = "8px 12px";
+                    msgDiv.style.borderRadius = "10px";
+                    msgDiv.style.maxWidth = "75%";
+                    msgDiv.style.wordBreak = "break-word";
+
+                    if (isMe) {
+                        msgDiv.style.background = "#0284c7";
+                        msgDiv.style.color = "white";
+                        msgDiv.style.marginLeft = "auto";
+                        msgDiv.innerHTML = `<div>${msg.text}</div>`;
+                    } else {
+                        msgDiv.style.background = "#334155";
+                        msgDiv.style.color = "white";
+                        msgDiv.style.marginRight = "auto";
+                        msgDiv.innerHTML = `<strong style="font-size:11px; color:#38bdf8; display:block;">👤 ${msg.sender || 'Guest'}</strong><div>${msg.text}</div>`;
+                    }
+
+                    container.appendChild(msgDiv);
+                });
+
+                container.scrollTop = container.scrollHeight; // အောက်ဆုံးသို့ auto scroll ဆင်းမည်
+            }, error => {
+                console.error("Chat Error: " + error.message);
+            });
+        }
+
+        // Page စတင်ပွင့်ချိန်တွင် Chat Listener ကိုပါ ဖွင့်ပေးမည်
+        const oldOnload = window.onload;
+        window.onload = function() {
+            if (oldOnload) oldOnload();
+            listenToGlobalChat(); // Chat စနစ် နားထောင်ခြင်း
+        };
+    </script>
 </body>
 </html>
