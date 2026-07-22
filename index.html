@@ -1,5 +1,4 @@
-
-importt React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Heart, 
   MessageCircle, 
@@ -47,7 +46,7 @@ export default function NextGenApp() {
       avatar: "N",
       time: "၀၀:၃၃",
       content: "Like တွေကို တစ်ယောက်ထဲ အများကြီး ပေးလို့မရအောင် စနစ်ပြင်ထားပြီးပါပြီ။ နှိပ်လိုက်ရင် Like တိုးမည်/ပြန်လျော့မည်။",
-      likedBy: [], // Array of user IDs who liked this
+      likedBy: [], 
       comments: []
     },
     {
@@ -72,7 +71,7 @@ export default function NextGenApp() {
     }
   ]);
 
-  // 1. Toggle Like (Fixed Bug: One like per user)
+  // 1. Toggle Like
   const handleLikeToggle = (postId) => {
     setPosts(prevPosts =>
       prevPosts.map(post => {
@@ -90,7 +89,7 @@ export default function NextGenApp() {
 
   // 2. Create New Post
   const handleCreatePost = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!newPostText.trim()) return;
 
     const newPost = {
@@ -211,9 +210,8 @@ export default function NextGenApp() {
                   Post
                 </button>
               </div>
-            </div>
-
-            {/* Posts List */}
+      </div>
+                  {/* Posts List */}
             {posts.map(post => {
               const isLiked = post.likedBy.includes(currentUser.id);
               const isCommentOpen = activeCommentPostId === post.id;
@@ -455,7 +453,4 @@ export default function NextGenApp() {
     </div>
   );
 }
-                  
-                  
-                  
-                  
+                    
