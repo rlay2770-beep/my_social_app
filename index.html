@@ -4,460 +4,309 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGen Social</title>
-    
-    <!-- React & Babel CDNs -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+<body class="bg-slate-100 text-slate-800 min-h-screen">
 
-    <div id="root"></div>
+    <div className="flex flex-col items-center min-h-screen">
+        <!-- Header Navbar -->
+        <header class="w-full max-w-2xl bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
+            <h1 class="text-xl font-bold text-indigo-600 tracking-wide cursor-pointer" onclick="switchTab('feed')">NextGen</h1>
+            <nav class="flex space-x-2">
+                <button id="btn-feed" onclick="switchTab('feed')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition bg-indigo-50 text-indigo-600">Feeds</button>
+                <button id="btn-explore" onclick="switchTab('explore')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600">Explore</button>
+                <button id="btn-profile" onclick="switchTab('profile')" class="px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600">Profile</button>
+            </nav>
+        </header>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        function App() {
-            // 1. User State (Stored in LocalStorage)
-            const [currentUser, setCurrentUser] = useState(() => {
-                const saved = localStorage.getItem('ng_user');
-                return saved ? JSON.parse(saved) : {
-                    id: "user_001",
-                    name: "NextGen User",
-                    bio: "Welcome to my NextGen Social Profile!",
-                    gender: "Male",
-                    country: "Myanmar",
-                    website: "https://nextgen.app",
-                    avatarUrl: null
-                };
-            });
-
-            // 2. Navigation & Post States
-            const [activeTab, setActiveTab] = useState('feed'); 
-            const [selectedHashtag, setSelectedHashtag] = useState(null);
+        <main class="w-full max-w-2xl p-4 flex-1">
             
-            const [newPostText, setNewPostText] = useState('');
-            const [mediaFile, setMediaFile] = useState(null);
-            const [mediaType, setMediaType] = useState(null); 
-            const [selectedAudio, setSelectedAudio] = useState('');
+            <!-- FEEDS SECTION -->
+            <div id="tab-feed" class="space-y-4">
+                <!-- Create Post Box -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex gap-3 items-center">
+                        <div id="user-avatar-badge" class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center overflow-hidden">N</div>
+                        <input id="post-input" type="text" placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
 
-            const [commentInputs, setCommentInputs] = useState({});
-            const [activeCommentPostId, setActiveCommentPostId] = useState(null);
-            const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-            const [editFormData, setEditFormData] = useState({ ...currentUser });
+                    <!-- Media Preview Area -->
+                    <div id="media-preview-container" class="hidden relative rounded-lg overflow-hidden border border-slate-200 bg-black max-h-60 flex justify-center items-center">
+                        <img id="image-preview" class="hidden max-h-60 object-contain" />
+                        <video id="video-preview" controls class="hidden max-h-60"></video>
+                        <button onclick="removeMedia()" class="absolute top-2 right-2 bg-slate-900/80 text-white px-2 py-1 rounded-full text-xs">✕ Remove</button>
+                    </div>
 
-            // Preset Audio Tracks
-            const audioTracks = [
-                "🎵 Trending Pop Beat",
-                "🎶 Chill Lo-Fi Vibe",
-                "🎸 Acoustic Guitar Melody"
-            ];
-
-            // 3. Posts State (Stored in LocalStorage)
-            const [posts, setPosts] = useState(() => {
-                const saved = localStorage.getItem('ng_posts');
-                return saved ? JSON.parse(saved) : [
-                    {
-                        id: "post_1",
-                        author: "NextGen User",
-                        avatarUrl: null,
-                        time: "ယခုလေးတင်",
-                        content: "Dj",
-                        mediaUrl: null,
-                        mediaType: null,
-                        audioTrack: null,
-                        likedBy: ["user_001"],
-                        comments: []
-                    },
-                    {
-                        id: "post_2",
-                        author: "NextGen User",
-                        avatarUrl: null,
-                        time: "ယခုလေးတင်",
-                        content: "အော်",
-                        mediaUrl: null,
-                        mediaType: null,
-                        audioTrack: null,
-                        likedBy: ["user_001"],
-                        comments: [{ id: "c1", author: "NextGen User", text: "မင်္ဂလာပါ" }]
-                    },
-                    {
-                        id: "post_welcome",
-                        author: "NextGen Team",
-                        avatarUrl: null,
-                        time: "ယနေ့",
-                        content: "Welcome to NextGen Social! မင်္ဂလာပါ၊ သင်၏ စာများကို စတင် မျှဝေနိုင်ပါပြီ။ #NextGenSocial 🚀",
-                        mediaUrl: null,
-                        mediaType: null,
-                        audioTrack: null,
-                        likedBy: [],
-                        comments: []
-                    }
-                ];
-            });
-
-            // Auto Save to LocalStorage (ဖုန်း/Browser ပိတ်လည်း Data မပျောက်ပါ)
-            useEffect(() => {
-                localStorage.setItem('ng_posts', JSON.stringify(posts));
-            }, [posts]);
-
-            useEffect(() => {
-                localStorage.setItem('ng_user', JSON.stringify(currentUser));
-            }, [currentUser]);
-
-            // Handle Media Selection
-            const handleMediaUpload = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        setMediaFile(reader.result);
-                        setMediaType(file.type.startsWith('video/') ? 'video' : 'image');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            // Handle Avatar Upload
-            const handleAvatarUpload = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        setEditFormData(prev => ({ ...prev, avatarUrl: reader.result }));
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            // Create Post
-            const handleCreatePost = () => {
-                if (!newPostText.trim() && !mediaFile) return;
-
-                const newPost = {
-                    id: `post_${Date.now()}`,
-                    author: currentUser.name,
-                    avatarUrl: currentUser.avatarUrl,
-                    time: "ယခုလေးတင်",
-                    content: newPostText,
-                    mediaUrl: mediaFile,
-                    mediaType: mediaType,
-                    audioTrack: selectedAudio || null,
-                    likedBy: [],
-                    comments: []
-                };
-
-                setPosts([newPost, ...posts]);
-                setNewPostText('');
-                setMediaFile(null);
-                setMediaType(null);
-                setSelectedAudio('');
-            };
-
-            // Toggle Like
-            const handleLike = (postId) => {
-                setPosts(posts.map(p => {
-                    if (p.id === postId) {
-                        const hasLiked = p.likedBy.includes(currentUser.id);
-                        return {
-                            ...p,
-                            likedBy: hasLiked ? p.likedBy.filter(id => id !== currentUser.id) : [...p.likedBy, currentUser.id]
-                        };
-                    }
-                    return p;
-                }));
-            };
-
-            // Add Comment
-            const handleAddComment = (postId) => {
-                const text = commentInputs[postId];
-                if (!text || !text.trim()) return;
-
-                setPosts(posts.map(p => {
-                    if (p.id === postId) {
-                        return {
-                            ...p,
-                            comments: [...p.comments, { id: `c_${Date.now()}`, author: currentUser.name, text: text.trim() }]
-                        };
-                    }
-                    return p;
-                }));
-                setCommentInputs({ ...commentInputs, [postId]: '' });
-            };
-
-            const displayedPosts = selectedHashtag 
-                ? posts.filter(p => p.content.includes(selectedHashtag))
-                : posts;
-
-            return (
-                <div className="flex flex-col items-center min-h-screen">
-                    
-                    {/* Header Navbar */}
-                    <header className="w-full max-w-2xl bg-white border-b border-slate-200 sticky top-0 z-10 px-4 py-3 flex justify-between items-center shadow-sm">
-                        <h1 className="text-xl font-bold text-indigo-600 tracking-wide cursor-pointer" onClick={() => { setSelectedHashtag(null); setActiveTab('feed'); }}>NextGen</h1>
-                        <nav className="flex space-x-2">
-                            <button onClick={() => { setSelectedHashtag(null); setActiveTab('feed'); }} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'feed' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Feeds</button>
-                            <button onClick={() => setActiveTab('explore')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'explore' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Explore</button>
-                            <button onClick={() => setActiveTab('profile')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${activeTab === 'profile' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'}`}>Profile</button>
-                        </nav>
-                    </header>
-
-                    <main className="w-full max-w-2xl p-4 flex-1">
-                        
-                        {/* --- FEEDS TAB --- */}
-                        {activeTab === 'feed' && (
-                            <div className="space-y-4">
-                                {selectedHashtag && (
-                                    <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-xl flex justify-between items-center text-xs text-indigo-700">
-                                        <span>Filtering: <b>{selectedHashtag}</b></span>
-                                        <button onClick={() => setSelectedHashtag(null)} className="font-bold underline">Show All</button>
-                                    </div>
-                                )}
-
-                                {/* Create Post Box */}
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-                                    <div className="flex gap-3 items-center">
-                                        {currentUser.avatarUrl ? (
-                                            <img src={currentUser.avatarUrl} className="w-10 h-10 rounded-full object-cover" />
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">N</div>
-                                        )}
-                                        <input 
-                                            type="text"
-                                            placeholder="ဘာတွေ စဉ်းစားနေလဲ... ?"
-                                            value={newPostText}
-                                            onChange={(e) => setNewPostText(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleCreatePost()}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        />
-                                    </div>
-
-                                    {/* Media Preview */}
-                                    {mediaFile && (
-                                        <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-black max-h-60 flex justify-center items-center">
-                                            {mediaType === 'image' ? (
-                                                <img src={mediaFile} className="max-h-60 object-contain" />
-                                            ) : (
-                                                <video src={mediaFile} controls className="max-h-60" />
-                                            )}
-                                            <button onClick={() => { setMediaFile(null); setMediaType(null); }} className="absolute top-2 right-2 bg-slate-900/80 text-white px-2 py-1 rounded-full text-xs">✕ Remove</button>
-                                        </div>
-                                    )}
-
-                                    {/* Optional Music Selection */}
-                                    {mediaFile && (
-                                        <div className="flex items-center gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
-                                            <span>🎵</span>
-                                            <select 
-                                                value={selectedAudio} 
-                                                onChange={(e) => setSelectedAudio(e.target.value)}
-                                                className="bg-transparent text-slate-700 w-full focus:outline-none"
-                                            >
-                                                <option value="">နောက်ခံ သီချင်းရွေးရန် (Optional)</option>
-                                                {audioTracks.map((track, i) => (
-                                                    <option key={i} value={track}>{track}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                                        <div className="flex gap-2">
-                                            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-indigo-600 text-white">News Feed</span>
-                                            <label className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
-                                                📷 Photo/Video
-                                                <input type="file" accept="image/*,video/*" onChange={handleMediaUpload} className="hidden" />
-                                            </label>
-                                        </div>
-
-                                        <button onClick={handleCreatePost} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition">
-                                            Post
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Posts Feed */}
-                                {displayedPosts.map(post => {
-                                    const isLiked = post.likedBy.includes(currentUser.id);
-                                    const isCommentOpen = activeCommentPostId === post.id;
-
-                                    return (
-                                        <div key={post.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                {post.avatarUrl ? (
-                                                    <img src={post.avatarUrl} className="w-9 h-9 rounded-full object-cover" />
-                                                ) : (
-                                                    <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">N</div>
-                                                )}
-                                                <div>
-                                                    <h4 className="font-semibold text-sm text-slate-900">{post.author}</h4>
-                                                    <p className="text-xs text-slate-400">{post.time}</p>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-sm text-slate-700 whitespace-pre-line">{post.content}</p>
-
-                                            {/* Audio Badge */}
-                                            {post.audioTrack && (
-                                                <div className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
-                                                    {post.audioTrack}
-                                                </div>
-                                            )}
-
-                                            {/* Media Content */}
-                                            {post.mediaUrl && (
-                                                <div className="rounded-lg overflow-hidden border border-slate-100 max-h-80 bg-black flex justify-center items-center">
-                                                    {post.mediaType === 'image' ? (
-                                                        <img src={post.mediaUrl} className="w-full max-h-80 object-cover" />
-                                                    ) : (
-                                                        <video src={post.mediaUrl} controls className="w-full max-h-80" />
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {/* Action Buttons */}
-                                            <div className="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
-                                                <button onClick={() => handleLike(post.id)} className={`transition ${isLiked ? 'text-red-500 font-bold' : 'hover:text-slate-800'}`}>
-                                                    ❤️ Like ({post.likedBy.length})
-                                                </button>
-                                                <button onClick={() => setActiveCommentPostId(isCommentOpen ? null : post.id)} className="hover:text-slate-800 transition">
-                                                    💬 Comment ({post.comments.length})
-                                                </button>
-                                                <button className="hover:text-slate-800 transition">
-                                                    🔗 Share
-                                                </button>
-                                            </div>
-
-                                            {/* Comment Box */}
-                                            {isCommentOpen && (
-                                                <div className="pt-3 border-t border-slate-100 space-y-2">
-                                                    {post.comments.map(c => (
-                                                        <div key={c.id} className="bg-slate-50 p-2 rounded-lg text-xs">
-                                                            <span className="font-bold">{c.author}: </span>
-                                                            <span>{c.text}</span>
-                                                        </div>
-                                                    ))}
-
-                                                    <div className="flex gap-2">
-                                                        <input 
-                                                            type="text" 
-                                                            placeholder="ကွန်မန့်ရေးရန်..."
-                                                            value={commentInputs[post.id] || ''}
-                                                            onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
-                                                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
-                                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                                        />
-                                                        <button onClick={() => handleAddComment(post.id)} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs">
-                                                            Send
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* --- EXPLORE TAB --- */}
-                        {activeTab === 'explore' && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                                <h2 className="text-lg font-bold text-slate-800">Explore Trends</h2>
-                                <p className="text-xs text-slate-500">Trending ခေါင်းစဉ်များကို နှိပ်၍ သီးသန့် စာများကို ရှာဖွေနိုင်ပါသည်</p>
-                                
-                                <div className="space-y-3 pt-2">
-                                    <div onClick={() => { setSelectedHashtag('#NextGenSocial'); setActiveTab('feed'); }} className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center cursor-pointer hover:bg-indigo-50 transition">
-                                        <div>
-                                            <p className="text-xs text-slate-400">Trending in Myanmar</p>
-                                            <p className="font-semibold text-sm text-indigo-600">#NextGenSocial</p>
-                                        </div>
-                                        <span className="text-xs text-slate-400">1.2K Posts</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* --- PROFILE TAB --- */}
-                        {activeTab === 'profile' && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex gap-4 items-center">
-                                        {currentUser.avatarUrl ? (
-                                            <img src={currentUser.avatarUrl} className="w-16 h-16 rounded-full object-cover border-2 border-indigo-600" />
-                                        ) : (
-                                            <div className="w-16 h-16 rounded-full bg-indigo-600 text-white font-bold text-2xl flex items-center justify-center">N</div>
-                                        )}
-                                        <div>
-                                            <h2 className="text-xl font-bold text-slate-900">{currentUser.name}</h2>
-                                            <p className="text-xs text-slate-500 mt-1">{currentUser.bio}</p>
-                                        </div>
-                                    </div>
-
-                                    <button onClick={() => { setEditFormData({ ...currentUser }); setIsEditProfileOpen(true); }} className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg">
-                                        Edit Profile
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100">
-                                    <div>
-                                        <span className="text-slate-400 block">Gender</span>
-                                        <span className="font-semibold text-slate-700">{currentUser.gender}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-slate-400 block">Country</span>
-                                        <span className="font-semibold text-slate-700">{currentUser.country}</span>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="text-slate-400 block">Website</span>
-                                        <a href={currentUser.website} target="_blank" className="font-semibold text-indigo-600">{currentUser.website}</a>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </main>
-
-                    {/* Edit Profile Modal */}
-                    {isEditProfileOpen && (
-                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                            <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-                                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                                    <h3 className="font-bold text-slate-800">Edit Profile</h3>
-                                    <button onClick={() => setIsEditProfileOpen(false)} className="text-slate-400">✕</button>
-                                </div>
-
-                                <div className="space-y-3 text-xs">
-                                    <div>
-                                        <label className="block text-slate-600 font-medium mb-1">Profile Picture Upload</label>
-                                        <input type="file" accept="image/*" onChange={handleAvatarUpload} className="w-full text-xs text-slate-500 border border-slate-200 rounded-lg p-1.5" />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-slate-600 font-medium mb-1">Name</label>
-                                        <input type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full border border-slate-200 rounded-lg p-2" />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-slate-600 font-medium mb-1">Bio</label>
-                                        <textarea rows="2" value={editFormData.bio} onChange={(e) => setEditFormData({ ...editFormData, bio: e.target.value })} className="w-full border border-slate-200 rounded-lg p-2"></textarea>
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                                        <button onClick={() => setIsEditProfileOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg">Cancel</button>
-                                        <button onClick={() => { setCurrentUser({ ...editFormData }); setIsEditProfileOpen(false); }} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Save Changes</button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                        <div class="flex gap-2">
+                            <label class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">
+                                📷 Photo/Video
+                                <input type="file" id="media-file-input" accept="image/*,video/*" onchange="handleFileSelect(event)" class="hidden">
+                            </label>
                         </div>
-                    )}
+                        <button onclick="createPost()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition">Post</button>
+                    </div>
                 </div>
-            );
+
+                <!-- Posts List Container -->
+                <div id="posts-container" class="space-y-4"></div>
+            </div>
+
+            <!-- EXPLORE SECTION -->
+            <div id="tab-explore" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <h2 class="text-lg font-bold text-slate-800">Explore Trends</h2>
+                <p class="text-xs text-slate-500">Trending ခေါင်းစဉ်များ</p>
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400">Trending in Myanmar</p>
+                        <p class="font-semibold text-sm text-indigo-600">#NextGenSocial</p>
+                    </div>
+                    <span class="text-xs text-slate-400">1.2K Posts</span>
+                </div>
+            </div>
+
+            <!-- PROFILE SECTION -->
+            <div id="tab-profile" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex gap-4 items-center">
+                        <div id="profile-page-avatar" class="w-16 h-16 rounded-full bg-indigo-600 text-white font-bold text-2xl flex items-center justify-center border-2 border-indigo-600 overflow-hidden">N</div>
+                        <div>
+                            <h2 id="profile-name-display" class="text-xl font-bold text-slate-900">NextGen User</h2>
+                            <p id="profile-bio-display" class="text-xs text-slate-500 mt-1">Welcome to NextGen Social!</p>
+                        </div>
+                    </div>
+                    <button onclick="openEditProfile()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg">Edit Profile</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100">
+                    <div><span class="text-slate-400 block">Gender</span><span id="profile-gender-display" class="font-semibold text-slate-700">Male</span></div>
+                    <div><span class="text-slate-400 block">Country</span><span id="profile-country-display" class="font-semibold text-slate-700">Myanmar</span></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- EDIT PROFILE MODAL -->
+        <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-800">Edit Profile</h3>
+                    <button onclick="closeEditProfile()" class="text-slate-400">✕</button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-600 font-medium mb-1">Profile Picture</label>
+                        <input type="file" id="avatar-input" accept="image/*" class="w-full text-xs text-slate-500 border border-slate-200 rounded-lg p-1.5" />
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 font-medium mb-1">Name</label>
+                        <input type="text" id="edit-name" class="w-full border border-slate-200 rounded-lg p-2" />
+                    </div>
+                    <div>
+                        <label class="block text-slate-600 font-medium mb-1">Bio</label>
+                        <textarea id="edit-bio" rows="2" class="w-full border border-slate-200 rounded-lg p-2"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                        <button onclick="closeEditProfile()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg">Cancel</button>
+                        <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // State Management with LocalStorage
+        let currentUser = JSON.parse(localStorage.getItem('ng_user')) || {
+            name: "NextGen User",
+            bio: "Welcome to NextGen Social!",
+            gender: "Male",
+            country: "Myanmar",
+            avatarUrl: null
+        };
+
+        let posts = JSON.parse(localStorage.getItem('ng_posts')) || [
+            {
+                id: "p1",
+                author: "NextGen Team",
+                time: "ယနေ့",
+                content: "မင်္ဂလာပါ! NextGen Social မှ ကြိုဆိုပါတယ်။",
+                mediaUrl: null,
+                mediaType: null,
+                likes: 0,
+                comments: []
+            }
+        ];
+
+        let selectedMediaData = null;
+        let selectedMediaType = null;
+
+        // Initialize UI
+        window.onload = function() {
+            renderProfile();
+            renderPosts();
+        };
+
+        function switchTab(tabName) {
+            document.getElementById('tab-feed').classList.add('hidden');
+            document.getElementById('tab-explore').classList.add('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+
+            document.getElementById('btn-feed').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600";
+            document.getElementById('btn-explore').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600";
+            document.getElementById('btn-profile').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600";
+
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).className = "px-3 py-1.5 rounded-lg text-sm font-medium transition bg-indigo-50 text-indigo-600";
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function renderProfile() {
+            document.getElementById('profile-name-display').innerText = currentUser.name;
+            document.getElementById('profile-bio-display').innerText = currentUser.bio;
+            
+            const badge = document.getElementById('user-avatar-badge');
+            const profileAvatar = document.getElementById('profile-page-avatar');
+
+            if(currentUser.avatarUrl) {
+                badge.innerHTML = `<img src="${currentUser.avatarUrl}" class="w-full h-full object-cover"/>`;
+                profileAvatar.innerHTML = `<img src="${currentUser.avatarUrl}" class="w-full h-full object-cover"/>`;
+            } else {
+                badge.innerHTML = currentUser.name.charAt(0);
+                profileAvatar.innerHTML = currentUser.name.charAt(0);
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedMediaData = e.target.result;
+                    selectedMediaType = file.type.startsWith('video/') ? 'video' : 'image';
+                    
+                    document.getElementById('media-preview-container').classList.remove('hidden');
+                    if (selectedMediaType === 'image') {
+                        document.getElementById('image-preview').src = selectedMediaData;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                        document.getElementById('video-preview').classList.add('hidden');
+                    } else {
+                        document.getElementById('video-preview').src = selectedMediaData;
+                        document.getElementById('video-preview').classList.remove('hidden');
+                        document.getElementById('image-preview').classList.add('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeMedia() {
+            selectedMediaData = null;
+            selectedMediaType = null;
+            document.getElementById('media-file-input').value = '';
+            document.getElementById('media-preview-container').classList.add('hidden');
+        }
+
+        function createPost() {
+            const input = document.getElementById('post-input');
+            const text = input.value.trim();
+            if (!text && !selectedMediaData) return;
+
+            const newPost = {
+                id: 'p_' + Date.now(),
+                author: currentUser.name,
+                avatarUrl: currentUser.avatarUrl,
+                time: "ယခုလေးတင်",
+                content: text,
+                mediaUrl: selectedMediaData,
+                mediaType: selectedMediaType,
+                likes: 0,
+                comments: []
+            };
+
+            posts.unshift(newPost);
+            localStorage.setItem('ng_posts', JSON.stringify(posts));
+
+            input.value = '';
+            removeMedia();
+            renderPosts();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('posts-container');
+            container.innerHTML = '';
+
+            posts.forEach(post => {
+                let mediaHTML = '';
+                if(post.mediaUrl) {
+                    if(post.mediaType === 'image') {
+                        mediaHTML = `<div class="rounded-lg overflow-hidden border border-slate-100 max-h-80 bg-black flex justify-center"><img src="${post.mediaUrl}" class="w-full max-h-80 object-cover"/></div>`;
+                    } else {
+                        mediaHTML = `<div class="rounded-lg overflow-hidden border border-slate-100 max-h-80 bg-black flex justify-center"><video src="${post.mediaUrl}" controls class="w-full max-h-80"></video></div>`;
+                    }
+                }
+
+                let avatarHTML = post.avatarUrl 
+                    ? `<img src="${post.avatarUrl}" class="w-9 h-9 rounded-full object-cover"/>`
+                    : `<div class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">${post.author.charAt(0)}</div>`;
+
+                const postEl = document.createElement('div');
+                postEl.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3";
+                postEl.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${avatarHTML}
+                        <div>
+                            <h4 class="font-semibold text-sm text-slate-900">${post.author}</h4>
+                            <p class="text-xs text-slate-400">${post.time}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-700">${post.content}</p>
+                    ${mediaHTML}
+                    <div class="flex items-center gap-6 pt-2 border-t border-slate-100 text-xs font-medium text-slate-500">
+                        <button onclick="likePost('${post.id}')" class="hover:text-red-500 transition">❤️ Like (${post.likes})</button>
+                    </div>
+                `;
+                container.appendChild(postEl);
+            });
+        }
+
+        function likePost(id) {
+            posts = posts.map(p => p.id === id ? {...p, likes: p.likes + 1} : p);
+            localStorage.setItem('ng_posts', JSON.stringify(posts));
+            renderPosts();
+        }
+
+        function openEditProfile() {
+            document.getElementById('edit-name').value = currentUser.name;
+            document.getElementById('edit-bio').value = currentUser.bio;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditProfile() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function saveProfile() {
+            currentUser.name = document.getElementById('edit-name').value;
+            currentUser.bio = document.getElementById('edit-bio').value;
+
+            const avatarFile = document.getElementById('avatar-input').files[0];
+            if(avatarFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUser.avatarUrl = e.target.result;
+                    localStorage.setItem('ng_user', JSON.stringify(currentUser));
+                    renderProfile();
+                    closeEditProfile();
+                };
+                reader.readAsDataURL(avatarFile);
+            } else {
+                localStorage.setItem('ng_user', JSON.stringify(currentUser));
+                renderProfile();
+                closeEditProfile();
+            }
+        }
     </script>
 </body>
-</html>                                        
+    </html>
+    
