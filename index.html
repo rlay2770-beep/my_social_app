@@ -907,8 +907,7 @@
                         alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
                     }
                 });
-        }
-
+    }
         function successLoginSetup(username, email) {
             currentUser.isLoggedIn = true;
             currentUser.username = username;
@@ -1266,15 +1265,6 @@
                         resultsContainer.appendChild(userCard);
                     });
                 })
-              userCard.onclick = function() {
-                            closeSearchPage();
-                            switchPage('chat', document.querySelectorAll('.nav-item')[2]);
-                            openDirectChat(username);
-                        };
-                        
-                        resultsContainer.appendChild(userCard);
-                    });
-                })
                 .catch((error) => {
                     console.error("Search Engine Error: ", error);
                     resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">ဒေတာဘေ့စ် ရှာဖွေရန် အဆင်မပြေပါ။</p>`;
@@ -1283,4 +1273,3 @@
     </script>
 </body>
 </html>
-       
