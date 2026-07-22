@@ -1329,5 +1329,47 @@
             });
         }
     </script>
+    <!-- ✅ အစားထိုးရမယ့် ကုဒ်အသစ် -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
+    authDomain: "my-social-app-13d41.firebaseapp.com",
+    databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
+    projectId: "my-social-app-13d41",
+    storageBucket: "my-social-app-13d41.firebasestorage.app",
+    messagingSenderId: "929198714349",
+    appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
+    measurementId: "G-2QDS45V6VL"
+  };
+
+  if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+  }
+  const database = firebase.database();
+
+  function sendChatMessage() {
+      const msgInput = document.getElementById('chat-msg');
+      if (!msgInput) return;
+      
+      const messageText = msgInput.value.trim();
+      if (messageText === "") return;
+
+      database.ref('public_chat').push({
+          text: messageText,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+      })
+      .then(() => {
+          msgInput.value = "";
+          alert("စာပို့တာ အောင်မြင်ပါတယ်ဗျာ!");
+      })
+      .catch((error) => {
+          alert("🚨 စာပို့မရသည့် Error: " + error.message);
+      });
+  }
+</script>
+    
 </body>
 </html>
