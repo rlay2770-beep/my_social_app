@@ -345,7 +345,7 @@
         <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
         <div style="display: flex; gap: 8px;">
             <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." class="input-field" style="flex: 1;">
-            <button id="keyboard-comment-send-btn" class="btn-primary">Send</button>
+            <button id="keyboard-comment-send-btn" onclick="submitKeyboardComment()" class="btn-primary">Send</button>
         </div>
     </div>
 
@@ -448,7 +448,7 @@
                 renderSection('feed-container', samplePosts, 'feed');
             });
 
-            db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
+             db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 let sampleVideos = [];
                 snapshot.forEach((doc) => {
                     let video = doc.data();
@@ -468,7 +468,7 @@
                 renderSection('ads-container', adsList, 'ads');
                 renderHomeAdBanner(adsList);
             });
-        }
+                    }
 
         function getYouTubeEmbedUrl(url) {
             let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -538,7 +538,6 @@
         }
 
         async function createNewPost() {
-            // 🛑 အကောင့်မဝင်ထားပါက ပို့စ်တင်ခွင့် မပြုပါ
             if (!currentUser.isLoggedIn) {
                 alert("🛑 ပို့စ်တင်ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါ။ Profile စာမျက်နှာသို့ သွားရောက်ပါဗျာ။");
                 switchPage('profile', document.getElementById('nav-profile-btn'));
@@ -567,8 +566,27 @@
                 alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
                 return;
             }
+db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
+                let sampleVideos = [];
+                snapshot.forEach((doc) => {
+                    let video = doc.data();
+                    video.firebaseKey = doc.id;
+                    sampleVideos.push(video);
+                });
+                renderSection('video-container', sampleVideos, 'video');
+            });
 
-            let isYoutube = false;
+            db.collection('ads').orderBy('id', 'desc').onSnapshot((snapshot) => {
+                let adsList = [];
+                snapshot.forEach((doc) => {
+                    let ad = doc.data();
+                    ad.firebaseKey = doc.id;
+                    adsList.push(ad);
+                });
+                renderSection('ads-container', adsList, 'ads');
+                renderHomeAdBanner(adsList);
+            });
+  let isYoutube = false;
             let isAudio = postType === 'audio';
             let isTikTok = postType === 'tiktok_style';
             let isTikTokLink = false;
@@ -640,7 +658,6 @@
             document.getElementById('post-audio-input').value = "";
         }
 
-        // 🔐 Login / Account Signup ဖွင့်ဆောက်ပေးသည့် Function
         function handleSecureLogin() {
             let userIn = document.getElementById('login-username');
             let emailIn = document.getElementById('login-google-email');
@@ -660,13 +677,11 @@
                 return;
             }
 
-            // အရင်ဆုံး အကောင့်ဝင်ရန် စမ်းသပ်မည်
             auth.signInWithEmailAndPassword(email, pWord)
                 .then(() => { 
                     successLoginSetup(uName, email); 
                 })
                 .catch((error) => {
-                    // အကောင့်မရှိသေးလျှင် (သို့မဟုတ်) Credential မှားယွင်းပါက အကောင့်အသစ် တိုက်ရိုက်ဆောက်ပေးမည်
                     if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
                         auth.createUserWithEmailAndPassword(email, pWord)
                             .then(() => {
@@ -717,8 +732,7 @@
                 document.getElementById('login-container').classList.remove('hidden');
                 alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
             });
-        }
-
+    }
         function triggerAdminSecret() {
             avatarClickCount++;
             if (avatarClickCount >= 5) {
@@ -756,6 +770,37 @@
             });
         }
 
+        // 🔄 Post Share ပြုလုပ်ပေးသည့် Function
+        function handleSharePost(firebaseKey, type, author, content) {
+            let shareData = {
+                title: `NextGen Post - ${author}`,
+                text: `${author} မျှဝေထားသော ပို့စ်: ${content}`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => {
+                        updateShareCount(firebaseKey, type);
+                    })
+                    .catch((err) => console.log('Share canceled/error:', err));
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("📋 ပို့စ် Link ကို Clipboard ထဲသို့ ကူးယူပြီးပါပြီ။ အခြားနေရာများတွင် ကူးယူမျှဝေနိုင်ပါသည်။");
+                updateShareCount(firebaseKey, type);
+            }
+        }
+
+        function updateShareCount(firebaseKey, type) {
+            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
+            let docRef = db.collection(targetCollection).doc(firebaseKey);
+            docRef.get().then((doc) => {
+                if (doc.exists) {
+                    docRef.update({ shares: (doc.data().shares || 0) + 1 });
+                }
+            });
+        }
+
         function openCommentKeyboard(firebaseKey, type) {
             if (!currentUser.isLoggedIn) {
                 alert("💬 ကွန်မန့်ပေးပို့ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါဗျာ။");
@@ -786,6 +831,21 @@
                 }
                 document.getElementById('keyboard-comment-box').classList.remove('hidden');
             });
+        }
+
+        function submitKeyboardComment() {
+            let input = document.getElementById('keyboard-comment-input');
+            let text = input.value.trim();
+            if (text === "" || activeCommentPostId === null) return;
+
+            let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
+            db.collection(targetCollection).doc(activeCommentPostId).update({
+                comments: firebase.firestore.FieldValue.arrayUnion({
+                    id: Date.now(),
+                    user: currentUser.username,
+                    text: text
+                })
+            }).then(() => { input.value = ""; });
         }
 
         function renderHomeAdBanner(adsList) {
@@ -873,6 +933,7 @@
                 
                 let commentCount = item.comments ? item.comments.length : 0;
                 let badge = type === 'ads' ? `<span style="color:#eab308; font-size:12px;">[📢 Ad]</span> ` : "";
+                let safeContent = (item.content || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -884,7 +945,7 @@
                     <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 8px; border-top: 1px solid #334155; font-size:13px;">
                         <span onclick="toggleLike('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #38bdf8">👍 ${item.likes || 0} Likes</span>
                         <span onclick="openCommentKeyboard('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #94a3b8">💬 ${commentCount} Comments</span>
-                        <span style="color: #64748b">🔄 Shares</span>
+                        <span onclick="handleSharePost('${item.firebaseKey}', '${type}', '${item.author}', '${safeContent}')" style="cursor: pointer; color: #38bdf8">🔄 ${item.shares || 0} Shares</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -899,7 +960,6 @@
         window.onload = function() {
             document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
             
-            // Auto Login state check
             let savedLoggedIn = localStorage.getItem('nextgen_logged_in');
             let savedUsername = localStorage.getItem('nextgen_username');
             let savedEmail = localStorage.getItem('nextgen_email');
@@ -923,7 +983,6 @@
             }
             
             listenToFirestore(); 
-            document.getElementById('keyboard-comment-send-btn').onclick = submitKeyboardComment;
         };
 
         function goToSearchPage() {
@@ -1009,3 +1068,5 @@
     </script>
 </body>
 </html>
+        
+ 
