@@ -264,7 +264,6 @@
     </style>
 </head>
 <body>
-
     <!-- Top Bar -->
     <div class="top-bar">
         <span id="app-logo">NextGen</span>
@@ -280,8 +279,7 @@
             <span id="top-bar-status-dot" class="offline-dot" style="position: absolute; bottom: 0; right: 0; border: 2px solid #0f172a;"></span>
         </div>
     </div>
-
-    <!-- Main Content Wrapper -->
+        <!-- Main Content Wrapper -->
     <main class="content-wrapper">
         
         <!-- 1. HOME စာမျက်နှာ -->
@@ -458,9 +456,8 @@
         <div id="search-results-container" style="flex: 1; overflow-y: auto;">
             <p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>
         </div>
-    </div>
-
-    <!-- ⚡ JavaScript Logic -->
+     </div>
+        <!-- ⚡ JavaScript Logic (Part 3) -->
     <script>
         // 🌐 Firebase Configuration
         const firebaseConfig = {
@@ -477,7 +474,10 @@
         const WAVEPAY_PHONE = "09663711680"; 
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
         const db = firebase.firestore(); 
         const rtdb = firebase.database(); 
         const auth = firebase.auth();
@@ -637,7 +637,7 @@
             document.getElementById('friend-profile-modal').style.display = 'none';
         }
 
-        /* 💬 REALTIME LIVE CHAT SYSTEM */
+        /* 💬 REALTIME LIVE CHAT SYSTEM (FIXED & IMPROVED) */
         function openDirectChat(targetUsername) {
             activeChatPartner = targetUsername;
             let titleHeader = document.getElementById('chat-header-title');
@@ -714,6 +714,8 @@
             }
 
             let input = document.getElementById('chat-text-input');
+            if (!input) return;
+
             let text = input.value.trim();
             if (text === "") return;
 
@@ -728,490 +730,115 @@
                 alert("❌ စာပို့မရပါ: " + err.message);
             });
         }
-
-        function listenToFirestore() {
-            db.collection('posts').orderBy('id', 'desc').onSnapshot((snapshot) => {
-                let samplePosts = [];
-                snapshot.forEach((doc) => {
-                    let post = doc.data();
-                    post.firebaseKey = doc.id; 
-                    samplePosts.push(post);
-                });
-                renderSection('feed-container', samplePosts, 'feed');
-            });
-
-            db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
-                let sampleVideos = [];
-                snapshot.forEach((doc) => {
-                    let video = doc.data();
-                    video.firebaseKey = doc.id;
-                    sampleVideos.push(video);
-                });
-                renderSection('video-container', sampleVideos, 'video');
-            });
-
-            db.collection('ads').orderBy('id', 'desc').onSnapshot((snapshot) => {
-                let adsList = [];
-                snapshot.forEach((doc) => {
-                    let ad = doc.data();
-                    ad.firebaseKey = doc.id;
-                    adsList.push(ad);
-                });
-                renderSection('ads-container', adsList, 'ads');
-                renderHomeAdBanner(adsList);
-            });
-        }
-
-        function getYouTubeEmbedUrl(url) {
-            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            let match = url.match(regExp);
-            if (match && match[2].length === 11) {
-                return `https://www.youtube.com/embed/${match[2]}`;
-            }
-            return url;
-        }
-
-        async function compressImageSafe(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = function (event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function () {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const MAX_WIDTH = 350; 
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx.drawImage(img, 0, 0, width, height);
-                            resolve(canvas.toDataURL('image/jpeg', 0.25));
-                        } catch (err) { reject(err); }
-                    };
-                };
-            });
-        }
-
-        async function processAudioFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = (err) => reject(err);
-            });
-        }
-
-        async function uploadProfilePicture() {
-            try {
-                let fileInput = document.getElementById('avatar-upload');
-                let file = fileInput.files[0];
-                if (!file) return;
-
-                alert("ဖိုင်ချုံ့နေပါသည်...");
-                let compressedAvatar = await compressImageSafe(file);
-                
-                currentUser.avatar = compressedAvatar;
-                localStorage.setItem('nextgen_avatar', compressedAvatar);
-                
-                document.getElementById('profile-avatar').src = compressedAvatar;
-                document.getElementById('top-bar-avatar').src = compressedAvatar;
-                
-                if(currentUser.isLoggedIn) {
-                    initOnlineStatus(currentUser.username);
-                }
-
-                alert("📸 ပရိုဖိုင်ဓာတ်ပုံကို ရေရှည်မှတ်ဉာဏ်ထဲသို့ မှတ်တမ်းတင်ပြီးပါပြီ။");
-            } catch (error) {
-                alert("❌ ဓာတ်ပုံတင်ရန် အဆင်မပြေပါ။");
-            }
-        }
-
-        async function createNewPost() {
+                /* 📝 CREATE POST LOGIC */
+        function createNewPost() {
             if (!currentUser.isLoggedIn) {
-                alert("🛑 ပို့စ်တင်ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါ။ Profile စာမျက်နှာသို့ သွားရောက်ပါဗျာ။");
+                alert("🛑 Post တင်ရန် အကောင့်ဝင်ပေးပါဗျာ။");
                 switchPage('profile', document.getElementById('nav-profile-btn'));
                 return;
             }
 
-            let textInput = document.getElementById('post-text');
-            let mediaInput = document.getElementById('post-media-url');
-            let photoInput = document.getElementById('post-photo-input');
-            let audioInput = document.getElementById('post-audio-input');
-            let typeInput = document.getElementById('post-type');
+            let text = document.getElementById('post-text').value.trim();
+            let mediaUrl = document.getElementById('post-media-url').value.trim();
+            let postType = document.getElementById('post-type').value;
 
-            let text = textInput.value.trim();
-            let mediaUrl = mediaInput.value.trim();
-            let postType = typeInput.value;
-            
-            let photoFile = photoInput.files[0];
-            let audioFile = audioInput.files[0];
-
-            if (text === "" && !photoFile && !audioFile && mediaUrl === "") {
-                alert("မျှဝေချင်တဲ့ အကြောင်းအရာတစ်ခုခု ဖြည့်စွက်ပေးပါဗျာ။");
+            if (text === "" && mediaUrl === "") {
+                alert("⚠️ စာသား သို့မဟုတ် Media Link တစ်ခုခု ထည့်သွင်းပေးပါဗျာ။");
                 return;
             }
 
-            if (postType === 'ad_post' && !currentUser.isAdmin) {
-                alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
-                return;
-            }
-
-            let isYoutube = false;
-            let isAudio = postType === 'audio';
-            let isTikTok = postType === 'tiktok_style';
-            let isTikTokLink = false;
-            let secondaryAudioUrl = "";
-
-            if (mediaUrl !== "" && (mediaUrl.includes("tiktok.com") || mediaUrl.includes("vt.tiktok"))) {
-                isTikTokLink = true;
-            }
-
-            if (mediaUrl !== "" && (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))) {
-                mediaUrl = getYouTubeEmbedUrl(mediaUrl);
-                isYoutube = true;
-                if(postType !== 'ad_post') postType = 'video'; 
-            }
-
-            if (photoFile) {
-                alert("ဖိုင်ချုံ့နေပါသည်...");
-                mediaUrl = await compressImageSafe(photoFile);
-                if(!isTikTok && postType !== 'ad_post') postType = 'image';
-            }
-
-            if (audioFile) {
-                alert("🎵 အသံဖိုင်ဒေတာကို ထည့်သွင်းနေပါသည်...");
-                let processedAudio = await processAudioFile(audioFile);
-                if (isTikTok) {
-                    secondaryAudioUrl = processedAudio; 
-                } else {
-                    mediaUrl = processedAudio;
-                    isAudio = true;
-                }
-            } else if (isTikTok && mediaUrl !== "" && !isYoutube) {
-                secondaryAudioUrl = mediaUrl; 
-            }
-
-            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile);
-            
-            let newPostObj = {
-                id: Date.now(),
+            let postData = {
                 author: currentUser.username,
-                content: text,
+                authorAvatar: currentUser.avatar,
+                text: text,
                 mediaUrl: mediaUrl,
-                audioUrl: secondaryAudioUrl, 
-                isImage: isImageFlag,
-                isAudio: isAudio,
-                isTikTok: isTikTok,
-                isTikTokLink: isTikTokLink,
-                isYoutube: isYoutube,
+                postType: postType,
                 likes: 0,
-                shares: 0,
-                comments: []
+                likedBy: [],
+                commentsCount: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            let targetCollection = 'posts';
-            if (postType === 'video') targetCollection = 'videos';
-            if (postType === 'ad_post') targetCollection = 'ads';
-
-            db.collection(targetCollection).add(newPostObj)
-                .then(() => {
-                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ!");
-                    resetPostInputs();
-                })
-                .catch(err => alert("❌ Database Error: " + err.message));
+            db.collection("posts").add(postData)
+            .then(() => {
+                alert("✅ Post အောင်မြင်စွာ တင်ပြီးပါပြီ!");
+                document.getElementById('post-text').value = "";
+                document.getElementById('post-media-url').value = "";
+                loadFeedPosts();
+            })
+            .catch(err => alert("❌ Post တင်၍ မရပါ: " + err.message));
         }
 
-        function resetPostInputs() {
-            document.getElementById('post-text').value = "";
-            document.getElementById('post-media-url').value = "";
-            document.getElementById('post-photo-input').value = "";
-            document.getElementById('post-audio-input').value = "";
-        }
+        /* 📰 LOAD FEED POSTS */
+        function loadFeedPosts() {
+            const feedContainer = document.getElementById('feed-container');
+            if (!feedContainer) return;
 
-        function handleSecureLogin() {
-            let userIn = document.getElementById('login-username');
-            let emailIn = document.getElementById('login-google-email');
-            let passIn = document.getElementById('login-password');
+            db.collection("posts").orderBy("createdAt", "desc").limit(20)
+            .onSnapshot(snapshot => {
+                feedContainer.innerHTML = "";
+                if (snapshot.empty) {
+                    feedContainer.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">မရှိသေးပါ။ စတင် ပို့စ်တင်နိုင်ပါပြီ။</p>`;
+                    return;
+                }
 
-            let uName = userIn.value.trim();
-            let email = emailIn.value.trim();
-            let pWord = passIn.value.trim();
+                snapshot.forEach(doc => {
+                    let post = doc.data();
+                    let postId = doc.id;
+                    let card = document.createElement('div');
+                    card.className = "feed-card";
 
-            if(uName === "" || email === "" || pWord === "") {
-                alert("အချက်အလက်အားလုံး (Username, Email, Password) ကို ဖြည့်စွက်ပေးပါဗျာ။");
-                return;
-            }
-
-            if(pWord.length < 6) {
-                alert("လျှို့ဝှက်နံပါတ် (Password) သည် အနည်းဆုံး ၆ လုံး သို့မဟုတ် ထို့ထက်ပိုရပါမည်။");
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, pWord)
-                .then(() => { 
-                    successLoginSetup(uName, email); 
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-                        auth.createUserWithEmailAndPassword(email, pWord)
-                            .then(() => {
-                                successLoginSetup(uName, email);
-                            })
-                            .catch((createErr) => {
-                                if(createErr.code === 'auth/email-already-in-use') {
-                                    alert("❌ ဤ အီးမေးလ်ဖြင့် အကောင့်ရှိပြီးသားဖြစ်ပါသည်။ လျှို့ဝှက်နံပါတ် (Password) မှန်အောင် ပြန်ရိုက်ပါ။");
-                                } else {
-                                    alert("🔒 အကောင့်ဝင်ရန်/ဆောက်ရန် အဆင်မပြေပါ: " + createErr.message);
-                                }
-                            });
-                    } else {
-                        alert("🔒 လုံခြုံရေးဆိုင်ရာ အမှားအယွင်း: " + error.message);
+                    let mediaContent = "";
+                    if (post.mediaUrl) {
+                        if (post.postType === 'image') {
+                            mediaContent = `<img src="${post.mediaUrl}" style="width:100%; border-radius:8px; margin-top:10px;">`;
+                        } else if (post.postType === 'video') {
+                            mediaContent = `<video controls style="width:100%; border-radius:8px; margin-top:10px;"><source src="${post.mediaUrl}"></video>`;
+                        } else if (post.postType === 'audio') {
+                            mediaContent = `<audio controls style="width:100%; margin-top:10px;"><source src="${post.mediaUrl}"></audio>`;
+                        }
                     }
+
+                    card.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <img src="${post.authorAvatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar-small">
+                            <div>
+                                <strong style="color:#38bdf8; font-size:14px;">${post.author}</strong>
+                                <span style="display:block; font-size:10px; color:#64748b;">Post ID: ${postId.substring(0, 6)}</span>
+                            </div>
+                        </div>
+                        <p style="font-size:14px; margin:5px 0; color:white; line-height:1.4;">${post.text}</p>
+                        ${mediaContent}
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid #334155; padding-top:8px;">
+                            <button onclick="likePost('${postId}', ${post.likes || 0})" style="background:none; border:none; color:#38bdf8; cursor:pointer;">❤️ Like (${post.likes || 0})</button>
+                            <button onclick="openCommentKeyboard('${postId}')" style="background:none; border:none; color:#38bdf8; cursor:pointer;">💬 Comment (${post.commentsCount || 0})</button>
+                        </div>
+                    `;
+                    feedContainer.appendChild(card);
                 });
-        }
-
-        function successLoginSetup(username, email) {
-            currentUser.isLoggedIn = true;
-            currentUser.username = username;
-            currentUser.email = email;
-
-            localStorage.setItem('nextgen_logged_in', 'true');
-            localStorage.setItem('nextgen_username', username);
-            localStorage.setItem('nextgen_email', email);
-
-            document.getElementById('login-container').classList.add('hidden');
-            document.getElementById('profile-container').classList.remove('hidden');
-            document.getElementById('profile-name').innerText = currentUser.username;
-            document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
-            
-            document.getElementById('top-bar-status-dot').className = "online-dot";
-            initOnlineStatus(username);
-
-            alert(`🎉 ကြိုဆိုပါတယ် ${currentUser.username}`);
-        }
-
-        function handleLogout() {
-            if(currentUser.username) {
-                const sanitized = sanitizeName(currentUser.username);
-                rtdb.ref('/status/' + sanitized).set({
-                    username: currentUser.username,
-                    avatar: currentUser.avatar,
-                    state: 'offline',
-                    last_changed: firebase.database.ServerValue.TIMESTAMP
-                });
-            }
-
-            auth.signOut().then(() => {
-                currentUser.isLoggedIn = false;
-                currentUser.username = "";
-                currentUser.email = "";
-                currentUser.isAdmin = false;
-                
-                localStorage.removeItem('nextgen_logged_in');
-                localStorage.removeItem('nextgen_username');
-                localStorage.removeItem('nextgen_email');
-
-                document.getElementById('top-bar-status-dot').className = "offline-dot";
-                document.getElementById('admin-indicator').classList.add('hidden');
-                document.getElementById('profile-container').classList.add('hidden');
-                document.getElementById('login-container').classList.remove('hidden');
-                alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
             });
         }
 
-        function triggerAdminSecret() {
-            avatarClickCount++;
-            if (avatarClickCount >= 5) {
-                avatarClickCount = 0;
-                let enteredPIN = prompt("Rlay Exclusive Admin PIN နံပါတ်ကို ရိုက်ထည့်ပါ:");
-                if (enteredPIN === adminPIN) {
-                    currentUser.isAdmin = true;
-                    document.getElementById('admin-indicator').classList.remove('hidden');
-                    alert("👑 Access Granted! ယခု ပို့စ်များကို တိုက်ရိုက်ဖျက်ဆီးနိုင်ပါပြီ။");
-                    listenToFirestore(); 
-                } else if (enteredPIN !== null) {
-                    alert("❌ PIN နံပါတ် မှားယွင်းနေပါသည်။");
-                }
-            }
-        }
-
-        function deletePostPermanently(firebaseKey, type) {
-            if (!currentUser.isAdmin) return;
-            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား?");
-            if (!confirmDelete) return;
-
-            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-            db.collection(targetCollection).doc(firebaseKey).delete()
-                .then(() => { alert("🗑️ ပို့စ်အား ဖျက်ဆီးပြီးပါပြီ။"); })
-                .catch(err => alert("❌ Error: " + err.message));
-        }
-
-        function toggleLike(firebaseKey, type) {
-            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-            let docRef = db.collection(targetCollection).doc(firebaseKey);
-            docRef.get().then((doc) => {
-                if (doc.exists) {
-                    docRef.update({ likes: (doc.data().likes || 0) + 1 });
-                }
-            });
-        }
-
-        function openCommentKeyboard(firebaseKey, type) {
+        /* ❤️ LIKE POST */
+        function likePost(postId, currentLikes) {
             if (!currentUser.isLoggedIn) {
-                alert("💬 ကွန်မန့်ပေးပို့ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါဗျာ။");
-                switchPage('profile', document.getElementById('nav-profile-btn'));
+                alert("🛑 Like ပေးရန် အကောင့်ဝင်ပေးပါဗျာ။");
                 return;
             }
-
-            activeCommentPostId = firebaseKey;
-            activeCommentType = type;
-            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
-            
-            db.collection(targetCollection).doc(firebaseKey).onSnapshot((doc) => {
-                if (!doc.exists) return;
-                let item = doc.data();
-                let listContainer = document.getElementById('keyboard-comments-list');
-                listContainer.innerHTML = "";
-
-                if (item.comments && Array.isArray(item.comments)) {
-                    item.comments.forEach(comment => {
-                        let commentDiv = document.createElement('div');
-                        commentDiv.style.background = "#0f172a";
-                        commentDiv.style.padding = "8px 12px";
-                        commentDiv.style.borderRadius = "8px";
-                        commentDiv.style.marginBottom = "6px";
-                        commentDiv.innerHTML = `<strong style="color: #38bdf8; cursor:pointer;" onclick="viewFriendProfileByName('${comment.user}')">${comment.user}</strong><p style="margin:4px 0 0 0; color:#cbd5e1;">${comment.text}</p>`;
-                        listContainer.appendChild(commentDiv);
-                    });
-                }
-                document.getElementById('keyboard-comment-box').classList.remove('hidden');
+            db.collection("posts").doc(postId).update({
+                likes: currentLikes + 1
             });
         }
 
-        function submitKeyboardComment() {
-            let input = document.getElementById('keyboard-comment-input');
-            let text = input.value.trim();
-            if (text === "" || activeCommentPostId === null) return;
-
-            let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
-            db.collection(targetCollection).doc(activeCommentPostId).update({
-                comments: firebase.firestore.FieldValue.arrayUnion({
-                    id: Date.now(),
-                    user: currentUser.username,
-                    text: text
-                })
-            }).then(() => { input.value = ""; });
-        }
-
-        function renderHomeAdBanner(adsList) {
-            let bannerContainer = document.getElementById('home-ad-banner');
-            if (!bannerContainer || adsList.length === 0) return;
-            bannerContainer.innerHTML = "";
-
-            let premiumAd = adsList[0];
-            let adMediaHTML = "";
+        /* 💬 COMMENT KEYBOARD PANEL LOGIC */
+        function openCommentKeyboard(postId) {
+            activeCommentPostId = postId;
+            document.getElementById('keyboard-comment-box').classList.remove('hidden');
+            loadComments(postId);
             
-            if(premiumAd.mediaUrl && premiumAd.mediaUrl !== "") {
-                if(premiumAd.isYoutube) {
-                    adMediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:8px;">
-                                    <iframe src="${premiumAd.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
-                                   </div>`;
-                } else if (premiumAd.isTikTokLink) {
-                    adMediaHTML = `<div style="margin-top:10px; text-align:center;">
-                                    <a href="${premiumAd.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
-                                   </div>`;
-                } else {
-                    adMediaHTML = `<img src="${premiumAd.mediaUrl}" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-top:8px;">`;
-                }
-            }
-
-            if (premiumAd.isTikTok && premiumAd.audioUrl) {
-                adMediaHTML += `<div style="background:#0f172a; padding:8px; border-radius:8px; margin-top:8px; border:1px dashed #eab308; text-align:center;">
-                                <audio controls style="width:100%; height:32px;"><source src="${premiumAd.audioUrl}" type="audio/mp3"></audio>
-                              </div>`;
-            }
-
-            let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${premiumAd.firebaseKey}', 'ads')" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; float:right;">🗑️ ဖျက်မည်</button>` : "";
-
-            bannerContainer.innerHTML = `
-                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #eab308; padding: 12px; border-radius: 14px; position: relative;">
-                    ${deleteBtnHTML}
-                    <span style="background:#eab308; color:black; font-size:10px; font-weight:bold; padding:2px 6px; border-radius:4px; margin-bottom:5px; display:inline-block;">🔥 SPONSOR AD</span>
-                    <strong style="color:#eab308; display:block; font-size:14px; cursor:pointer;" onclick="viewFriendProfileByName('${premiumAd.author}')">📢 ${premiumAd.author}</strong>
-                    <p style="margin:6px 0 0 0; font-size:13px; color:white; white-space:pre-wrap;">${premiumAd.content}</p>
-                    ${adMediaHTML}
-                </div>
-            `;
-        }
-
-        function renderSection(containerId, dataList, type) {
-            let container = document.getElementById(containerId);
-            if (!container) return;
-            container.innerHTML = "";
-
-            if(dataList.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ပို့စ်များ မရှိသေးပါဗျာ။</p>`;
-                return;
-            }
-
-            dataList.forEach(item => {
-                let card = document.createElement('div');
-                card.className = "feed-card";
-                
-                let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${item.firebaseKey}', '${type}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; margin-left:10px;">🗑️ ဖြတ်ပစ်မည်</button>` : "";
-                let mediaHTML = "";
-                
-                if (item.mediaUrl && item.mediaUrl !== "") {
-                    if (item.isYoutube) {
-                        mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:10px;">
-                                        <iframe src="${item.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
-                                     </div>`;
-                    } else if (item.isTikTokLink) {
-                        mediaHTML = `<div style="margin-top:10px; text-align:center;">
-                                        <a href="${item.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
-                                     </div>`;
-                    } else if (item.isImage) {
-                        mediaHTML = `<img src="${item.mediaUrl}" style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: cover;">`;
-                    } else if (item.isAudio) {
-                        mediaHTML = `<div style="background:#0f172a; padding:12px; border-radius:8px; margin-top:10px; text-align:center;">
-                                        <audio controls style="width:100%;"><source src="${item.mediaUrl}" type="audio/mp3"></audio>
-                                     </div>`;
-                    }
-                }
-                
-                if (item.isTikTok && item.audioUrl) {
-                    mediaHTML += `<div style="background:#0f172a; padding:10px; border-radius:8px; margin-top:8px; border:1px dashed #38bdf8; text-align:center;">
-                                    <span style="font-size:11px; color:#38bdf8; display:block; margin-bottom:5px;">🎵 Background TikTok Music Track</span>
-                                    <audio controls style="width:100%; height:32px;"><source src="${item.audioUrl}" type="audio/mp3"></audio>
-                                  </div>`;
-                }
-                
-                let commentCount = item.comments ? item.comments.length : 0;
-                let badge = type === 'ads' ? `<span style="color:#eab308; font-size:12px;">[📢 Ad]</span> ` : "";
-                
-                card.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                        <div style="flex:1;"><strong style="color:#38bdf8; cursor:pointer;" onclick="viewFriendProfileByName('${item.author}')">👤 ${badge}${item.author}</strong></div>
-                        <div>${deleteBtnHTML}</div>
-                    </div>
-                    <p style="margin-top: 8px; line-height:1.5; white-space: pre-wrap;">${item.content}</p>
-                    ${mediaHTML}
-                    <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 8px; border-top: 1px solid #334155; font-size:13px;">
-                        <span onclick="toggleLike('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #38bdf8">👍 ${item.likes || 0} Likes</span>
-                        <span onclick="openCommentKeyboard('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #94a3b8">💬 ${commentCount} Comments</span>
-                        <span style="color: #64748b">🔄 Shares</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            document.getElementById('keyboard-comment-send-btn').onclick = function() {
+                sendComment();
+            };
         }
 
         function closeCommentKeyboard() {
@@ -1219,223 +846,222 @@
             activeCommentPostId = null;
         }
 
-        window.onload = function() {
-            document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
-            
-            // Auto Login state check
-            let savedLoggedIn = localStorage.getItem('nextgen_logged_in');
-            let savedUsername = localStorage.getItem('nextgen_username');
-            let savedEmail = localStorage.getItem('nextgen_email');
+        function loadComments(postId) {
+            let commentList = document.getElementById('keyboard-comments-list');
+            commentList.innerHTML = "<p style='color:#64748b; font-size:12px;'>Comments များ ရယူနေသည်...</p>";
 
-            if (savedLoggedIn === 'true' && savedUsername) {
-                currentUser.isLoggedIn = true;
-                currentUser.username = savedUsername;
-                currentUser.email = savedEmail || "";
+            db.collection("posts").doc(postId).collection("comments").orderBy("createdAt", "asc")
+            .onSnapshot(snap => {
+                commentList.innerHTML = "";
+                if (snap.empty) {
+                    commentList.innerHTML = "<p style='color:#64748b; font-size:12px;'>ကွန်မန့် မရှိသေးပါ။ စတင် ရေးသားပါ။</p>";
+                    return;
+                }
+                snap.forEach(doc => {
+                    let c = doc.data();
+                    let div = document.createElement('div');
+                    div.style.marginBottom = "6px";
+                    div.style.fontSize = "12px";
+                    div.innerHTML = `<strong style="color:#38bdf8;">${c.author}:</strong> <span style="color:white;">${c.text}</span>`;
+                    commentList.appendChild(div);
+                });
+                commentList.scrollTop = commentList.scrollHeight;
+            });
+        }
 
-                document.getElementById('login-container').classList.add('hidden');
-                document.getElementById('profile-container').classList.remove('hidden');
-                document.getElementById('profile-name').innerText = currentUser.username;
-                document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
-
-                document.getElementById('top-bar-status-dot').className = "online-dot";
-                initOnlineStatus(savedUsername);
+        function sendComment() {
+            if (!currentUser.isLoggedIn) {
+                alert("🛑 Comment ပေးရန် အကောင့်ဝင်ပေးပါဗျာ။");
+                return;
             }
+            let input = document.getElementById('keyboard-comment-input');
+            let text = input.value.trim();
+            if (text === "" || !activeCommentPostId) return;
 
-            let savedAvatar = localStorage.getItem('nextgen_avatar');
-            if (savedAvatar) {
-                currentUser.avatar = savedAvatar;
-                document.getElementById('profile-avatar').src = savedAvatar;
-                document.getElementById('top-bar-avatar').src = savedAvatar;
-            }
-            
-            listenToFirestore(); 
-            document.getElementById('keyboard-comment-send-btn').onclick = submitKeyboardComment;
-        };
+            db.collection("posts").doc(activeCommentPostId).collection("comments").add({
+                author: currentUser.username,
+                text: text,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                db.collection("posts").doc(activeCommentPostId).update({
+                    commentsCount: firebase.firestore.FieldValue.increment(1)
+                });
+                input.value = "";
+            });
+        }
 
+        /* 🔍 REALTIME SEARCH FRIENDS */
         function goToSearchPage() {
-            const searchOverlay = document.getElementById('search-page-overlay');
-            if (searchOverlay) {
-                searchOverlay.style.display = 'flex';
-                document.getElementById('search-friend-input').value = "";
-                document.getElementById('search-results-container').innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
-                document.getElementById('search-friend-input').focus();
-            }
+            document.getElementById('search-page-overlay').style.display = 'flex';
         }
 
         function closeSearchPage() {
-            const searchOverlay = document.getElementById('search-page-overlay');
-            if (searchOverlay) {
-                searchOverlay.style.display = 'none';
-            }
+            document.getElementById('search-page-overlay').style.display = 'none';
         }
 
         function searchFriendRealtime() {
-            let queryText = document.getElementById('search-friend-input').value.trim();
+            let query = document.getElementById('search-friend-input').value.trim();
             let resultsContainer = document.getElementById('search-results-container');
-            
-            if (queryText === "") {
+
+            if (query === "") {
                 resultsContainer.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
                 return;
             }
 
-            resultsContainer.innerHTML = `<p style="text-align:center; color:#38bdf8; padding:20px;">ရှာဖွေနေပါသည်...</p>`;
-
-            rtdb.ref('/status').once('value', snapshot => {
+            rtdb.ref('/status').once('value', snap => {
                 resultsContainer.innerHTML = "";
-                let data = snapshot.val();
+                let data = snap.val();
+                if (!data) return;
+
                 let found = false;
-
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        let userObj = data[key];
-                        if (userObj.username && userObj.username.toLowerCase().includes(queryText.toLowerCase())) {
-                            found = true;
-                            let userCard = document.createElement('div');
-                            userCard.style.display = "flex";
-                            userCard.style.alignItems = "center";
-                            userCard.style.gap = "15px";
-                            userCard.style.padding = "12px 15px";
-                            userCard.style.background = "#1e293b";
-                            userCard.style.borderRadius = "8px";
-                            userCard.style.marginBottom = "10px";
-                            userCard.style.cursor = "pointer";
-                            userCard.style.border = "1px solid #334155";
-
-                            let isOnline = userObj.state === 'online';
-                            let dotHTML = isOnline ? `<span class="online-dot"></span> <span style="font-size:11px; color:#22c55e;">Online</span>` : `<span class="offline-dot"></span> <span style="font-size:11px; color:#64748b;">Offline</span>`;
-                            let avatarUrl = userObj.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-
-                            userCard.innerHTML = `
-                                <img src="${avatarUrl}" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #38bdf8; object-fit:cover;">
-                                <div>
-                                    <strong style="color: white; font-size: 15px;">👤 ${userObj.username}</strong>
-                                    <div style="margin-top:2px;">${dotHTML}</div>
-                                </div>
-                            `;
-
-                            userCard.onclick = function() {
-                                closeSearchPage();
-                                viewFriendProfile(userObj.username, avatarUrl, isOnline);
-                            };
-
-                            resultsContainer.appendChild(userCard);
-                        }
-                    });
-                }
-
-                if (!found) {
-                    resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">❌ ကိုက်ညီသည့် သူငယ်ချင်း မတွေ့ပါဗျာ။</p>`;
-                }
-            });
-        }
-    </script>
-        <!-- ✅ ပြင်ဆင်ပြီးသား FIREBASE SDK နှင့် CHAT SCRIPT -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-    <script>
-        // 🌐 Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
-            authDomain: "my-social-app-13d41.firebaseapp.com",
-            databaseURL: "https://my-social-app-13d41-default-rtdb.firebaseio.com",
-            projectId: "my-social-app-13d41",
-            storageBucket: "my-social-app-13d41.firebasestorage.app",
-            messagingSenderId: "929198714349",
-            appId: "1:929198714349:web:719f16bc688f1cff5ecbe4",
-            measurementId: "G-2QDS45V6VL"
-        };
-
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        // ⚠️ App တစ်ခုလုံးအတွက် Realtime Database ကို rtdb အဖြစ် သတ်မှတ်ပါသည်
-        const rtdb = firebase.database();
-        const database = rtdb; 
-
-        // 💬 ၁။ စာပို့သည့် Function
-        function sendChatMessage() {
-            const msgInput = document.getElementById('chat-msg');
-            if (!msgInput) {
-                alert("🚨 'chat-msg' ဆိုသည့် Input ID ကို မတွေ့ပါဗျာ။");
-                return;
-            }
-            
-            const messageText = msgInput.value.trim();
-            if (messageText === "") return;
-
-            // လက်ရှိ User နာမည်ယူခြင်း
-            let senderName = (typeof currentUser !== 'undefined' && currentUser.username) ? currentUser.username : "Guest";
-
-            // Realtime Database ထို့ စာပို့ခြင်း
-            rtdb.ref('public_chat').push({
-                sender: senderName,
-                text: messageText,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            })
-            .then(() => {
-                msgInput.value = ""; // စာပို့အောင်မြင်ပါက Textbox ကို ရှင်းမည်
-            })
-            .catch((error) => {
-                alert("🚨 စာပို့မရသည့် အကြောင်းအရင်း: " + error.message);
-            });
-        }
-
-        // 💬 ၂။ ရောက်လာသော စာများကို Realtime တိုက်ရိုက် ပြသပေးမည့် Listener
-        function listenToGlobalChat() {
-            const container = document.getElementById('msg-container'); // သင့် Chat Box Container ID
-            if (!container) return;
-
-            rtdb.ref('public_chat').limitToLast(30).on('value', snapshot => {
-                container.innerHTML = "";
-                let data = snapshot.val();
-
-                if (!data) {
-                    container.innerHTML = `<div style="text-align:center; color:#64748b; padding:10px;">စကားပြောဆိုမှု မရှိသေးပါဗျာ။</div>`;
-                    return;
-                }
-
                 Object.keys(data).forEach(key => {
-                    let msg = data[key];
-                    let myName = (typeof currentUser !== 'undefined' && currentUser.username) ? currentUser.username : "Guest";
-                    let isMe = (msg.sender === myName);
+                    let u = data[key];
+                    if (u.username && u.username.toLowerCase().includes(query.toLowerCase())) {
+                        found = true;
+                        let item = document.createElement('div');
+                        item.className = "feed-card";
+                        item.style.display = "flex";
+                        item.style.alignItems = "center";
+                        item.style.justifySpaceBetween = "space-between";
+                        item.style.marginBottom = "8px";
 
-                    let msgDiv = document.createElement('div');
-                    msgDiv.style.margin = "8px 0";
-                    msgDiv.style.padding = "8px 12px";
-                    msgDiv.style.borderRadius = "10px";
-                    msgDiv.style.maxWidth = "75%";
-                    msgDiv.style.wordBreak = "break-word";
+                        let isOnline = u.state === 'online';
+                        let avatar = u.avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
-                    if (isMe) {
-                        msgDiv.style.background = "#0284c7";
-                        msgDiv.style.color = "white";
-                        msgDiv.style.marginLeft = "auto";
-                        msgDiv.innerHTML = `<div>${msg.text}</div>`;
-                    } else {
-                        msgDiv.style.background = "#334155";
-                        msgDiv.style.color = "white";
-                        msgDiv.style.marginRight = "auto";
-                        msgDiv.innerHTML = `<strong style="font-size:11px; color:#38bdf8; display:block;">👤 ${msg.sender || 'Guest'}</strong><div>${msg.text}</div>`;
+                        item.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <img src="${avatar}" class="avatar-small">
+                                <div>
+                                    <strong style="color:white; font-size:14px;">${u.username}</strong>
+                                    <span style="display:block; font-size:11px; color:${isOnline ? '#22c55e' : '#64748b'};">${isOnline ? '🟢 Online' : '⚪ Offline'}</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary" style="padding:5px 10px; font-size:12px;">Profile ကြည့်မည်</button>
+                        `;
+                        item.onclick = () => {
+                            closeSearchPage();
+                            viewFriendProfile(u.username, avatar, isOnline);
+                        };
+                        resultsContainer.appendChild(item);
                     }
-
-                    container.appendChild(msgDiv);
                 });
 
-                container.scrollTop = container.scrollHeight; // အောက်ဆုံးသို့ auto scroll ဆင်းမည်
-            }, error => {
-                console.error("Chat Error: " + error.message);
+                if (!found) {
+                    resultsContainer.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">ရှာမတွေ့ပါဗျာ။</p>`;
+                }
             });
         }
 
-        // Page စတင်ပွင့်ချိန်တွင် Chat Listener ကိုပါ ဖွင့်ပေးမည်
-        const oldOnload = window.onload;
+        /* 🔐 AUTHENTICATION & PROFILE LOGIC */
+        function handleSecureLogin() {
+            let name = document.getElementById('login-username').value.trim();
+            let email = document.getElementById('login-google-email').value.trim();
+            let pass = document.getElementById('login-password').value.trim();
+
+            if (name === "" || email === "" || pass === "") {
+                alert("⚠️ အချက်အလက် အားလုံး ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါဗျာ။");
+                return;
+            }
+
+            currentUser.isLoggedIn = true;
+            currentUser.username = name;
+            currentUser.email = email;
+
+            // Save session locally
+            localStorage.setItem("nextgen_user", JSON.stringify(currentUser));
+
+            updateProfileUI();
+            initOnlineStatus(name);
+            alert("🎉 လုံခြုံစွာ အကောင့်ဝင်ရောက်ပြီးပါပြီ!");
+        }
+
+        function handleLogout() {
+            if (currentUser.username) {
+                const userSanitized = sanitizeName(currentUser.username);
+                rtdb.ref('/status/' + userSanitized).set({
+                    username: currentUser.username,
+                    avatar: currentUser.avatar,
+                    state: 'offline',
+                    last_changed: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+
+            currentUser = { isLoggedIn: false, username: "", email: "", avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png", isAdmin: false };
+            localStorage.removeItem("nextgen_user");
+            updateProfileUI();
+            alert("👋 အကောင့်မှ ထွက်လိုက်ပါပြီ။");
+        }
+
+        function updateProfileUI() {
+            const loginBox = document.getElementById('login-container');
+            const profileBox = document.getElementById('profile-container');
+            const waveNum = document.getElementById('wavepay-display-num');
+            if (waveNum) waveNum.innerText = WAVEPAY_PHONE;
+
+            if (currentUser.isLoggedIn) {
+                loginBox.classList.add('hidden');
+                profileBox.classList.remove('hidden');
+                document.getElementById('profile-name').innerText = currentUser.username;
+                document.getElementById('profile-email').innerText = currentUser.email;
+                document.getElementById('profile-avatar').src = currentUser.avatar;
+                document.getElementById('top-bar-avatar').src = currentUser.avatar;
+                
+                let dot = document.getElementById('top-bar-status-dot');
+                dot.className = "online-dot";
+            } else {
+                loginBox.classList.remove('hidden');
+                profileBox.classList.add('hidden');
+                document.getElementById('top-bar-avatar').src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                let dot = document.getElementById('top-bar-status-dot');
+                dot.className = "offline-dot";
+            }
+        }
+
+        function uploadProfilePicture() {
+            let fileInput = document.getElementById('avatar-upload');
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUser.avatar = e.target.result;
+                    document.getElementById('profile-avatar').src = e.target.result;
+                    document.getElementById('top-bar-avatar').src = e.target.result;
+                    localStorage.setItem("nextgen_user", JSON.stringify(currentUser));
+                    
+                    if (currentUser.username) {
+                        initOnlineStatus(currentUser.username);
+                    }
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+        }
+
+        function triggerAdminSecret() {
+            avatarClickCount++;
+            if (avatarClickCount >= 5) {
+                avatarClickCount = 0;
+                let pin = prompt("🔐 Admin Secret Access PIN ကို ရိုက်ထည့်ပါ:");
+                if (pin === adminPIN) {
+                    currentUser.isAdmin = true;
+                    document.getElementById('admin-indicator').classList.remove('hidden');
+                    alert("⭐ Admin Mode ဖွင့်လှစ်ပြီးပါပြီ!");
+                } else {
+                    alert("❌ PIN နံပါတ် မှားယွင်းနေပါသည်။");
+                }
+            }
+        }
+
+        // 🚀 App Init Lifecycle
         window.onload = function() {
-            if (oldOnload) oldOnload();
-            listenToGlobalChat(); // Chat စနစ် နားထောင်ခြင်း
+            let saved = localStorage.getItem("nextgen_user");
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                updateProfileUI();
+                initOnlineStatus(currentUser.username);
+            }
+            loadFeedPosts();
         };
     </script>
 </body>
 </html>
+    
+                        
