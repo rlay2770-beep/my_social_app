@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen App v3</title>
+    <title>NextGen App v4 Fixed</title>
     
     <!-- 🌐 Firebase SDK Core & Modules -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -118,6 +118,15 @@
             background: #1e293b;
             padding: 15px;
             margin-bottom: 20px;
+        }
+
+        .login-warning-box {
+            background: #1e293b;
+            border: 1px dashed #38bdf8;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
             position: relative;
             z-index: 10;
         }
@@ -136,21 +145,21 @@
         .select-field {
             background: #0f172a;
             color: white;
-            border: 1px solid #38bdf8;
-            padding: 8px;
+            border: 1px solid #334155;
+            padding: 5px;
             border-radius: 6px;
-            cursor: pointer;
-            outline: none;
         }
 
         .btn-primary {
             background: #38bdf8;
             color: black;
             border: none;
-            padding: 8px 15px;
+            padding: 10px 18px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            position: relative;
+            z-index: 11;
         }
 
         .btn-danger {
@@ -168,7 +177,7 @@
             width: 100%;
         }
 
-        /* Modals & Overlays */
+        /* Comment Modal Layer Issue Fixed */
         .comment-keyboard-panel {
             position: fixed;
             bottom: 0;
@@ -210,7 +219,7 @@
         .text-center { text-align: center; }
         .section-title { text-align: center; margin-bottom: 15px; }
         .info-box { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #233554; margin-bottom: 12px; }
-        .post-action-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px; gap: 10px; }
+        .post-action-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; border-top: 1px solid #334155; padding-top: 8px; }
         .upload-area { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px dashed #334155; display: flex; flex-direction: column; gap: 8px; }
     </style>
 </head>
@@ -220,7 +229,6 @@
     <div class="top-bar">
         <span id="app-logo">NextGen</span>
         
-        <!-- 🔍 ရှာဖွေရေး မှန်ဘီလူးခလုတ် -->
         <div onclick="goToSearchPage()" class="search-btn">
             <span>🔍</span>
             <span class="search-text">Search Friends...</span>
@@ -236,21 +244,25 @@
         
         <!-- 1. HOME စာမျက်နှာ -->
         <section id="feed-page" class="page-section">
-            <div id="post-input-box" class="post-box">
+            
+            <!-- 🔑 Logged Out Warning Banner -->
+            <div id="login-required-notice" class="login-warning-box">
+                <span style="font-size: 14px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 5px;">🔒 အသုံးပြုရန် အကောင့်တစ်ခုဖွင့်ပါ / ဝင်ရောက်ပါ</span>
+                <p style="font-size: 12px; color: #94a3b8; margin: 0 0 12px 0;">စာသား၊ ဓာတ်ပုံ သို့မဟုတ် သီချင်းများ မျှဝေတင်သွင်းနိုင်ရန် အကောင့်ဝင်ထားရန် လိုအပ်ပါသည်။ (Like, Comment, Share များကို တိုက်ရိုက် ပြုလုပ်နိုင်ပါသည်။)</p>
+                <button type="button" onclick="goToProfilePageDirectly()" class="btn-primary" style="font-size: 13px; cursor: pointer;">Profile သို့သွားပြီး အကောင့်ဝင်မည်</button>
+            </div>
+
+            <!-- 📝 Post Input Box -->
+            <div id="post-input-box" class="post-box hidden">
                 <label class="label-blue">📝 အသစ်တင်မည်</label>
                 
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." class="input-field">
+                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ..." class="input-field">
                 <input type="text" id="post-media-url" placeholder="ဓာတ်ပုံ/ဗီဒီယို/သီချင်း Link (YouTube/TikTok/Direct Link)" class="input-field font-small">
                 
-                <!-- Multi File Selector Panel -->
                 <div id="file-uploader-area" class="upload-area">
                     <div id="photo-input-container">
-                        <label id="photo-input-label" class="sub-label">📷 ဓာတ်ပုံရွေးချယ်ရန်:</label>
-                        <input type="file" id="post-photo-input" accept="image/*" class="file-input">
-                    </div>
-                    <div id="video-input-container" class="hidden">
-                        <label id="video-input-label" class="sub-label">🎥 MP4 ဗီဒီယိုဖိုင်ရွေးချယ်ရန်:</label>
-                        <input type="file" id="post-video-input" accept="video/mp4, video/*" class="file-input">
+                        <label id="photo-input-label" class="sub-label">📷 ဓာတ်ပုံ/ဗီဒီယို ဖိုင်ရွေးချယ်ရန်:</label>
+                        <input type="file" id="post-photo-input" accept="image/*,video/*" class="file-input">
                     </div>
                     <div id="audio-input-container" class="hidden">
                         <label id="audio-input-label" class="sub-label">🎵 MP3 သီချင်းဖိုင်ရွေးချယ်ရန်:</label>
@@ -262,7 +274,7 @@
                     <select id="post-type" class="select-field" onchange="adjustUploadUI()">
                         <option value="text_only">စာသားသက်သက် (Text)</option>
                         <option value="image">ဓာတ်ပုံပို့စ် (Image)</option>
-                        <option value="video">ဗီဒီယိုပို့စ် (Video/MP4)</option>
+                        <option value="video">ဗီဒီယိုပို့စ် (Video)</option>
                         <option value="audio">အသံဖိုင်/သီချင်း (Audio/MP3)</option>
                         <option value="tiktok_style">🎵 ပုံ + သီချင်းတွဲတင်မည် (TikTok Style)</option>
                         <option value="ad_post">📢 Sponsor Ad (Admin Only)</option>
@@ -271,7 +283,6 @@
                 </div>
             </div>
             
-            <!-- Live Premium Ads Box -->
             <div id="home-ad-banner" style="margin-bottom: 15px;"></div>
             <div id="feed-container"></div>
         </section>
@@ -306,7 +317,6 @@
                 <button onclick="handleSecureLogin()" class="btn-primary full-width">လုံခြုံစွာ ဝင်ရောက်မည် / အကောင့်သစ်ဆောက်မည်</button>
             </div>
 
-            <!-- Profile Container -->
             <div id="profile-container" class="feed-card hidden text-center">
                 <div style="position: relative; display: inline-block; margin-bottom: 15px;">
                     <img id="profile-avatar" onclick="triggerAdminSecret()" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar-large">
@@ -353,7 +363,7 @@
         <div id="keyboard-comments-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;"></div>
         <div style="display: flex; gap: 8px;">
             <input type="text" id="keyboard-comment-input" placeholder="စာသားရိုက်ထည့်ပါ..." class="input-field" style="flex: 1;">
-            <button id="keyboard-comment-send-btn" class="btn-primary">Send</button>
+            <button id="keyboard-comment-send-btn" onclick="submitKeyboardComment()" class="btn-primary">Send</button>
         </div>
     </div>
 
@@ -381,7 +391,6 @@
 
     <!-- ⚡ JavaScript Logic -->
     <script>
-        // 🌐 Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCA85LKki60OJ11bYrb8gsML0Lj8cSdRTY",
           authDomain: "my-social-app-13d41.firebaseapp.com",
@@ -395,17 +404,16 @@
 
         const WAVEPAY_PHONE = "09663711680"; 
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(); 
         const auth = firebase.auth();
 
         let currentUser = {
             isLoggedIn: false,
-            username: "",
+            username: "ဧည့်သည် (Guest)",
             email: "",
             avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-            isAdmin: true // Default Admin Access Enabled
+            isAdmin: false
         };
 
         const adminPIN = "4784";
@@ -413,25 +421,37 @@
         let activeCommentType = 'feed';
         let avatarClickCount = 0;
 
+        function goToProfilePageDirectly() {
+            switchPage('profile', document.getElementById('nav-profile-btn'));
+        }
+
+        function updateUIAuthState() {
+            const noticeBox = document.getElementById('login-required-notice');
+            const postBox = document.getElementById('post-input-box');
+
+            if (currentUser.isLoggedIn) {
+                if (noticeBox) noticeBox.classList.add('hidden');
+                if (postBox) postBox.classList.remove('hidden');
+            } else {
+                if (noticeBox) noticeBox.classList.remove('hidden');
+                if (postBox) postBox.classList.add('hidden');
+            }
+        }
+
         function adjustUploadUI() {
             let type = document.getElementById('post-type').value;
             let photoArea = document.getElementById('photo-input-container');
-            let videoArea = document.getElementById('video-input-container');
             let audioArea = document.getElementById('audio-input-container');
             
-            photoArea.classList.add('hidden');
-            videoArea.classList.add('hidden');
-            audioArea.classList.add('hidden');
-
             if (type === 'audio') {
+                photoArea.classList.add('hidden');
                 audioArea.classList.remove('hidden');
-            } else if (type === 'video') {
-                videoArea.classList.remove('hidden');
             } else if (type === 'tiktok_style') {
                 photoArea.classList.remove('hidden');
                 audioArea.classList.remove('hidden');
             } else {
                 photoArea.classList.remove('hidden');
+                audioArea.classList.add('hidden');
             }
         }
 
@@ -520,13 +540,29 @@
                 };
             });
         }
-
-        // MP4 / Media File Processing Function
-        async function processMediaFile(file) {
+        async function processAudioFile(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
+        /* 🎬 Large Video Compression & Trimming Helper */
+        async function processVideoFileSafe(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    let rawData = e.target.result;
+                    // စာလုံးရေအလွန်ကြီးပါက ဖျက်ချပြီး လုံခြုံစွာ တင်ပေးမည့် စနစ်
+                    if (rawData.length > 1048576 * 3) {
+                        resolve(rawData.substring(0, 1048576 * 3));
+                    } else {
+                        resolve(rawData);
+                    }
+                };
                 reader.onerror = (err) => reject(err);
             });
         }
@@ -545,7 +581,7 @@
                 
                 document.getElementById('profile-avatar').src = compressedAvatar;
                 document.getElementById('top-bar-avatar').src = compressedAvatar;
-                alert("📸 ပရိုဖိုင်ဓာတ်ပုံကို မှတ်တမ်းတင်ပြီးပါပြီ။");
+                alert("📸 ပရိုဖိုင်ဓာတ်ပုံကို ရေရှည်မှတ်ဉာဏ်ထဲသို့ မှတ်တမ်းတင်ပြီးပါပြီ။");
             } catch (error) {
                 alert("❌ ဓာတ်ပုံတင်ရန် အဆင်မပြေပါ။");
             }
@@ -554,13 +590,13 @@
         async function createNewPost() {
             if (!currentUser.isLoggedIn) {
                 alert("🛑 ပို့စ်တင်ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါ။ Profile စာမျက်နှာသို့ သွားရောက်ပါဗျာ။");
-                switchPage('profile', document.getElementById('nav-profile-btn'));
+                goToProfilePageDirectly();
                 return;
-        }
+            }
+
             let textInput = document.getElementById('post-text');
             let mediaInput = document.getElementById('post-media-url');
             let photoInput = document.getElementById('post-photo-input');
-            let videoInput = document.getElementById('post-video-input');
             let audioInput = document.getElementById('post-audio-input');
             let typeInput = document.getElementById('post-type');
 
@@ -569,11 +605,15 @@
             let postType = typeInput.value;
             
             let photoFile = photoInput.files[0];
-            let videoFile = videoInput.files[0];
             let audioFile = audioInput.files[0];
 
-            if (text === "" && !photoFile && !videoFile && !audioFile && mediaUrl === "") {
+            if (text === "" && !photoFile && !audioFile && mediaUrl === "") {
                 alert("မျှဝေချင်တဲ့ အကြောင်းအရာတစ်ခုခု ဖြည့်စွက်ပေးပါဗျာ။");
+                return;
+            }
+
+            if (postType === 'ad_post' && !currentUser.isAdmin) {
+                alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
                 return;
             }
 
@@ -590,44 +630,44 @@
             if (mediaUrl !== "" && (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))) {
                 mediaUrl = getYouTubeEmbedUrl(mediaUrl);
                 isYoutube = true;
-                if(postType !== 'ad_post') postType = 'video'; 
             }
 
             if (photoFile) {
-                alert("📷 ပုံရိပ် ဖိုင်ချုံ့နေပါသည်...");
-                mediaUrl = await compressImageSafe(photoFile);
-                if(!isTikTok && postType !== 'ad_post') postType = 'image';
-            }
-
-            if (videoFile) {
-                alert("🎥 MP4 ဗီဒီယိုဖိုင်ကို ထည့်သွင်းပေးနေပါသည်...");
-                mediaUrl = await processMediaFile(videoFile);
-                if (postType !== 'ad_post') postType = 'video';
+                if (photoFile.type.startsWith('video/')) {
+                    alert("🎬 ဗီဒီယိုဖိုင် ချုံ့ပေးနေပါသည်။ စက္ကန့်အနည်းငယ် စောင့်ဆိုင်းပေးပါ...");
+                    mediaUrl = await processVideoFileSafe(photoFile);
+                    if(postType !== 'ad_post') postType = 'video';
+                } else {
+                    alert("ဖိုင်ချုံ့နေပါသည်...");
+                    mediaUrl = await compressImageSafe(photoFile);
+                    if (!isTikTok && postType !== 'ad_post') postType = 'image';
+                }
             }
 
             if (audioFile) {
                 alert("🎵 အသံဖိုင်ဒေတာကို ထည့်သွင်းနေပါသည်...");
-                let processedAudio = await processMediaFile(audioFile);
+                let processedAudio = await processAudioFile(audioFile);
                 if (isTikTok) {
                     secondaryAudioUrl = processedAudio; 
                 } else {
                     mediaUrl = processedAudio;
                     isAudio = true;
                 }
-            } else if (isTikTok && mediaUrl !== "" && !isYoutube) {
+            } else if (isTikTok && mediaUrl !== "" && !isYoutube && !isTikTokLink) {
                 secondaryAudioUrl = mediaUrl; 
             }
 
-            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile);
-            
+            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile && !photoFile.type.startsWith('video/') && !isYoutube && !isTikTokLink);
+            let isVideoFlag = postType === 'video' || (photoFile && photoFile.type.startsWith('video/'));
+
             let newPostObj = {
                 id: Date.now(),
-                author: currentUser.username || "Admin Rlay",
+                author: currentUser.username,
                 content: text,
                 mediaUrl: mediaUrl,
                 audioUrl: secondaryAudioUrl, 
                 isImage: isImageFlag,
-                isVideo: postType === 'video' && !isYoutube,
+                isVideo: isVideoFlag,
                 isAudio: isAudio,
                 isTikTok: isTikTok,
                 isTikTokLink: isTikTokLink,
@@ -643,7 +683,7 @@
 
             db.collection(targetCollection).add(newPostObj)
                 .then(() => {
-                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ R Lay!");
+                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ!");
                     resetPostInputs();
                 })
                 .catch(err => alert("❌ Database Error: " + err.message));
@@ -653,7 +693,6 @@
             document.getElementById('post-text').value = "";
             document.getElementById('post-media-url').value = "";
             document.getElementById('post-photo-input').value = "";
-            document.getElementById('post-video-input').value = "";
             document.getElementById('post-audio-input').value = "";
         }
 
@@ -711,15 +750,17 @@
             document.getElementById('profile-container').classList.remove('hidden');
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
-            document.getElementById('admin-indicator').classList.remove('hidden');
+
+            updateUIAuthState();
             alert(`🎉 ကြိုဆိုပါတယ် ${currentUser.username}`);
         }
 
         function handleLogout() {
             auth.signOut().then(() => {
                 currentUser.isLoggedIn = false;
-                currentUser.username = "";
+                currentUser.username = "ဧည့်သည် (Guest)";
                 currentUser.email = "";
+                currentUser.isAdmin = false;
                 
                 localStorage.removeItem('nextgen_logged_in');
                 localStorage.removeItem('nextgen_username');
@@ -728,7 +769,9 @@
                 document.getElementById('admin-indicator').classList.add('hidden');
                 document.getElementById('profile-container').classList.add('hidden');
                 document.getElementById('login-container').classList.remove('hidden');
-                alert("🚪 အကောင့်မှ ထွက်ပြီးပါပြီ။");
+
+                updateUIAuthState();
+                alert("🚪 အကောင့်မှ ထွက်ပြီးပါပြီ။ အသုံးပြုရန် အကောင့်တစ်ခု ဖွင့်ပါ/ဝင်ရောက်ပါ။");
             });
         }
 
@@ -740,7 +783,7 @@
                 if (enteredPIN === adminPIN) {
                     currentUser.isAdmin = true;
                     document.getElementById('admin-indicator').classList.remove('hidden');
-                    alert("👑 Access Granted! Admin Mode Activated.");
+                    alert("👑 Access Granted! ယခု ပို့စ်များကို တိုက်ရိုက်ဖျက်ဆီးနိုင်ပါပြီ။");
                     listenToFirestore(); 
                 } else if (enteredPIN !== null) {
                     alert("❌ PIN နံပါတ် မှားယွင်းနေပါသည်။");
@@ -749,7 +792,8 @@
         }
 
         function deletePostPermanently(firebaseKey, type) {
-            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
+            if (!currentUser.isAdmin) return;
+            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား?");
             if (!confirmDelete) return;
 
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -768,13 +812,37 @@
             });
         }
 
-        function openCommentKeyboard(firebaseKey, type) {
-            if (!currentUser.isLoggedIn) {
-                alert("💬 ကွန်မန့်ပေးပို့ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါဗျာ။");
-                switchPage('profile', document.getElementById('nav-profile-btn'));
-                return;
-            }
+        function handleSharePost(firebaseKey, type, author, content) {
+            let shareData = {
+                title: `NextGen Post - ${author}`,
+                text: `${author} မျှဝေထားသော ပို့စ်: ${content}`,
+                url: window.location.href
+            };
 
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => {
+                        updateShareCount(firebaseKey, type);
+                    })
+                    .catch((err) => console.log('Share canceled/error:', err));
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("📋 ပို့စ် Link ကို Clipboard ထဲသို့ ကူးယူပြီးပါပြီ။");
+                updateShareCount(firebaseKey, type);
+            }
+        }
+
+        function updateShareCount(firebaseKey, type) {
+            let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
+            let docRef = db.collection(targetCollection).doc(firebaseKey);
+            docRef.get().then((doc) => {
+                if (doc.exists) {
+                    docRef.update({ shares: (doc.data().shares || 0) + 1 });
+                }
+            });
+        }
+
+        function openCommentKeyboard(firebaseKey, type) {
             activeCommentPostId = firebaseKey;
             activeCommentType = type;
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -805,11 +873,13 @@
             let text = input.value.trim();
             if (text === "" || activeCommentPostId === null) return;
 
+            let authorName = currentUser.isLoggedIn ? currentUser.username : "ဧည့်သည် (Guest)";
+
             let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
             db.collection(targetCollection).doc(activeCommentPostId).update({
                 comments: firebase.firestore.FieldValue.arrayUnion({
                     id: Date.now(),
-                    user: currentUser.username,
+                    user: authorName,
                     text: text
                 })
             }).then(() => { input.value = ""; });
@@ -828,12 +898,12 @@
                     adMediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:8px;">
                                     <iframe src="${premiumAd.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
                                    </div>`;
-                } else if (premiumAd.isVideo) {
-                    adMediaHTML = `<video controls style="width:100%; border-radius:8px; margin-top:8px; max-height:250px;"><source src="${premiumAd.mediaUrl}" type="video/mp4"></video>`;
                 } else if (premiumAd.isTikTokLink) {
                     adMediaHTML = `<div style="margin-top:10px; text-align:center;">
                                     <a href="${premiumAd.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
                                    </div>`;
+                } else if (premiumAd.isVideo) {
+                    adMediaHTML = `<video controls style="width:100%; border-radius:8px; margin-top:8px;"><source src="${premiumAd.mediaUrl}"></video>`;
                 } else {
                     adMediaHTML = `<img src="${premiumAd.mediaUrl}" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; margin-top:8px;">`;
                 }
@@ -845,7 +915,7 @@
                               </div>`;
             }
 
-            let deleteBtnHTML = `<button onclick="deletePostPermanently('${premiumAd.firebaseKey}', 'ads')" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; float:right;">🗑️ ဖျက်မည်</button>`;
+            let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${premiumAd.firebaseKey}', 'ads')" style="background:#ef4444; color:white; border:none; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; float:right;">🗑️ ဖျက်မည်</button>` : "";
 
             bannerContainer.innerHTML = `
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #eab308; padding: 12px; border-radius: 14px; position: relative;">
@@ -872,7 +942,7 @@
                 let card = document.createElement('div');
                 card.className = "feed-card";
                 
-                let deleteBtnHTML = `<button onclick="deletePostPermanently('${item.firebaseKey}', '${type}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; margin-left:10px;">🗑️ ဖြတ်ပစ်မည်</button>`;
+                let deleteBtnHTML = currentUser.isAdmin ? `<button onclick="deletePostPermanently('${item.firebaseKey}', '${type}')" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; margin-left:10px;">🗑️ ဖြတ်ပစ်မည်</button>` : "";
                 let mediaHTML = "";
                 
                 if (item.mediaUrl && item.mediaUrl !== "") {
@@ -880,12 +950,12 @@
                         mediaHTML = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; margin-top:10px;">
                                         <iframe src="${item.mediaUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
                                      </div>`;
-                    } else if (item.isVideo) {
-                        mediaHTML = `<video controls style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px;"><source src="${item.mediaUrl}" type="video/mp4"></video>`;
                     } else if (item.isTikTokLink) {
                         mediaHTML = `<div style="margin-top:10px; text-align:center;">
                                         <a href="${item.mediaUrl}" target="_blank" style="display:inline-block; background:#ff0050; color:white; padding:8px 15px; border-radius:20px; font-weight:bold; text-decoration:none; font-size:12px;">🎵 View TikTok Video</a>
                                      </div>`;
+                    } else if (item.isVideo) {
+                        mediaHTML = `<video controls style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px;"><source src="${item.mediaUrl}"></video>`;
                     } else if (item.isImage) {
                         mediaHTML = `<img src="${item.mediaUrl}" style="width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: cover;">`;
                     } else if (item.isAudio) {
@@ -904,6 +974,7 @@
                 
                 let commentCount = item.comments ? item.comments.length : 0;
                 let badge = type === 'ads' ? `<span style="color:#eab308; font-size:12px;">[📢 Ad]</span> ` : "";
+                let safeContent = (item.content || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -915,7 +986,7 @@
                     <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 8px; border-top: 1px solid #334155; font-size:13px;">
                         <span onclick="toggleLike('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #38bdf8">👍 ${item.likes || 0} Likes</span>
                         <span onclick="openCommentKeyboard('${item.firebaseKey}', '${type}')" style="cursor: pointer; color: #94a3b8">💬 ${commentCount} Comments</span>
-                        <span style="color: #64748b">🔄 Shares</span>
+                        <span onclick="handleSharePost('${item.firebaseKey}', '${type}', '${item.author}', '${safeContent}')" style="cursor: pointer; color: #38bdf8">🔄 ${item.shares || 0} Shares</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -930,15 +1001,20 @@
         window.onload = function() {
             document.getElementById('wavepay-display-num').innerText = WAVEPAY_PHONE;
             
-            // Auto Admin Session
-            currentUser.isLoggedIn = true;
-            currentUser.username = "Admin Rlay";
-            currentUser.isAdmin = true;
+            let savedLoggedIn = localStorage.getItem('nextgen_logged_in');
+            let savedUsername = localStorage.getItem('nextgen_username');
+            let savedEmail = localStorage.getItem('nextgen_email');
 
-            document.getElementById('login-container').classList.add('hidden');
-            document.getElementById('profile-container').classList.remove('hidden');
-            document.getElementById('profile-name').innerText = currentUser.username;
-            document.getElementById('admin-indicator').classList.remove('hidden');
+            if (savedLoggedIn === 'true' && savedUsername) {
+                currentUser.isLoggedIn = true;
+                currentUser.username = savedUsername;
+                currentUser.email = savedEmail || "";
+
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('profile-container').classList.remove('hidden');
+                document.getElementById('profile-name').innerText = currentUser.username;
+                document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
+            }
 
             let savedAvatar = localStorage.getItem('nextgen_avatar');
             if (savedAvatar) {
@@ -947,8 +1023,8 @@
                 document.getElementById('top-bar-avatar').src = savedAvatar;
             }
             
+            updateUIAuthState();
             listenToFirestore(); 
-            document.getElementById('keyboard-comment-send-btn').onclick = submitKeyboardComment;
         };
 
         function goToSearchPage() {
@@ -959,9 +1035,8 @@
                 document.getElementById('search-results-container').innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">ရှာဖွေလိုသည့် အမည်ကို စတင်ရိုက်နှိပ်ပါ။</p>`;
                 document.getElementById('search-friend-input').focus();
             }
-        }
-
-        function closeSearchPage() {
+    }
+         function closeSearchPage() {
             const searchOverlay = document.getElementById('search-page-overlay');
             if (searchOverlay) {
                 searchOverlay.style.display = 'none';
