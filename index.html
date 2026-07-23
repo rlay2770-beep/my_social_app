@@ -120,6 +120,15 @@
             margin-bottom: 20px;
         }
 
+        .login-warning-box {
+            background: #1e293b;
+            border: 1px dashed #38bdf8;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         /* Inputs & Buttons */
         .input-field {
             width: 100%;
@@ -232,10 +241,19 @@
         
         <!-- 1. HOME စာမျက်နှာ -->
         <section id="feed-page" class="page-section">
-            <div id="post-input-box" class="post-box">
+            
+            <!-- 🔑 Logged Out Warning Banner -->
+            <div id="login-required-notice" class="login-warning-box">
+                <span style="font-size: 14px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 5px;">🔒 အသုံးပြုရန် အကောင့်တစ်ခုဖွင့်ပါ / ဝင်ရောက်ပါ</span>
+                <p style="font-size: 12px; color: #94a3b8; margin: 0 0 10px 0;">စာသား၊ ဓာတ်ပုံ သို့မဟုတ် သီချင်းများ မျှဝေတင်သွင်းနိုင်ရန် အကောင့်ဝင်ထားရန် လိုအပ်ပါသည်။ (Like, Comment, Share များကို တိုက်ရိုက် ပြုလုပ်နိုင်ပါသည်။)</p>
+                <button onclick="switchPage('profile', document.getElementById('nav-profile-btn'))" class="btn-primary" style="font-size: 12px;">Profile သို့သွားပြီး အကောင့်ဝင်မည်</button>
+            </div>
+
+            <!-- 📝 Post Input Box (Only visible when logged in) -->
+            <div id="post-input-box" class="post-box hidden">
                 <label class="label-blue">📝 အသစ်တင်မည်</label>
                 
-                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ R Lay..." class="input-field">
+                <input type="text" id="post-text" placeholder="ဘာတွေ မျှဝေချင်လဲ..." class="input-field">
                 <input type="text" id="post-media-url" placeholder="ဓာတ်ပုံ/ဗီဒီယို/သီချင်း Link (YouTube/TikTok/Direct Link)" class="input-field font-small">
                 
                 <!-- Dual File Selector Panel -->
@@ -394,7 +412,7 @@
 
         let currentUser = {
             isLoggedIn: false,
-            username: "",
+            username: "ဧည့်သည် (Guest)",
             email: "",
             avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
             isAdmin: false
@@ -404,6 +422,19 @@
         let activeCommentPostId = null;
         let activeCommentType = 'feed';
         let avatarClickCount = 0;
+
+        function updateUIAuthState() {
+            const noticeBox = document.getElementById('login-required-notice');
+            const postBox = document.getElementById('post-input-box');
+
+            if (currentUser.isLoggedIn) {
+                if (noticeBox) noticeBox.classList.add('hidden');
+                if (postBox) postBox.classList.remove('hidden');
+            } else {
+                if (noticeBox) noticeBox.classList.remove('hidden');
+                if (postBox) postBox.classList.add('hidden');
+            }
+        }
 
         function adjustUploadUI() {
             let type = document.getElementById('post-type').value;
@@ -423,6 +454,12 @@
         }
 
         function switchPage(pageId, buttonElement) {
+            try {
+                document.querySelectorAll('.page-section').forEach(page => page.classList.add('hidden'));
+                const targetPage = document.getElementById(`${pageId}-page`);
+                if (targetPage) targetPage.classList.remove('hidden');
+
+                function switchPage(pageId, buttonElement) {
             try {
                 document.querySelectorAll('.page-section').forEach(page => page.classList.add('hidden'));
                 const targetPage = document.getElementById(`${pageId}-page`);
@@ -448,7 +485,7 @@
                 renderSection('feed-container', samplePosts, 'feed');
             });
 
-             db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
+            db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 let sampleVideos = [];
                 snapshot.forEach((doc) => {
                     let video = doc.data();
@@ -468,7 +505,7 @@
                 renderSection('ads-container', adsList, 'ads');
                 renderHomeAdBanner(adsList);
             });
-                    }
+        }
 
         function getYouTubeEmbedUrl(url) {
             let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -566,46 +603,28 @@
                 alert("🛑 ကြော်ငြာ (Sponsor Ad) တင်ခွင့်ကို Admin သီးသန့်သာ ခွင့်ပြုထားပါသည်။");
                 return;
             }
-db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
-                let sampleVideos = [];
-                snapshot.forEach((doc) => {
-                    let video = doc.data();
-                    video.firebaseKey = doc.id;
-                    sampleVideos.push(video);
-                });
-                renderSection('video-container', sampleVideos, 'video');
-            });
 
-            db.collection('ads').orderBy('id', 'desc').onSnapshot((snapshot) => {
-                let adsList = [];
-                snapshot.forEach((doc) => {
-                    let ad = doc.data();
-                    ad.firebaseKey = doc.id;
-                    adsList.push(ad);
-                });
-                renderSection('ads-container', adsList, 'ads');
-                renderHomeAdBanner(adsList);
-            });
-  let isYoutube = false;
+            let isYoutube = false;
             let isAudio = postType === 'audio';
             let isTikTok = postType === 'tiktok_style';
             let isTikTokLink = false;
             let secondaryAudioUrl = "";
 
+            // ✅ TikTok Link စစ်ဆေးခြင်း
             if (mediaUrl !== "" && (mediaUrl.includes("tiktok.com") || mediaUrl.includes("vt.tiktok"))) {
                 isTikTokLink = true;
             }
 
+            // ✅ YouTube Link စစ်ဆေးခြင်း
             if (mediaUrl !== "" && (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be"))) {
                 mediaUrl = getYouTubeEmbedUrl(mediaUrl);
                 isYoutube = true;
-                if(postType !== 'ad_post') postType = 'video'; 
             }
 
             if (photoFile) {
                 alert("ဖိုင်ချုံ့နေပါသည်...");
                 mediaUrl = await compressImageSafe(photoFile);
-                if(!isTikTok && postType !== 'ad_post') postType = 'image';
+                if (!isTikTok && postType !== 'ad_post') postType = 'image';
             }
 
             if (audioFile) {
@@ -617,11 +636,11 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                     mediaUrl = processedAudio;
                     isAudio = true;
                 }
-            } else if (isTikTok && mediaUrl !== "" && !isYoutube) {
+            } else if (isTikTok && mediaUrl !== "" && !isYoutube && !isTikTokLink) {
                 secondaryAudioUrl = mediaUrl; 
             }
 
-            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile);
+            let isImageFlag = postType === 'image' || isTikTok || (postType === 'ad_post' && photoFile && !isYoutube && !isTikTokLink);
             
             let newPostObj = {
                 id: Date.now(),
@@ -639,13 +658,14 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 comments: []
             };
 
+            // ✅ Target Database Collection ကို တိကျစွာ ခွဲခြားခြင်း
             let targetCollection = 'posts';
             if (postType === 'video') targetCollection = 'videos';
             if (postType === 'ad_post') targetCollection = 'ads';
 
             db.collection(targetCollection).add(newPostObj)
                 .then(() => {
-                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ R Lay!");
+                    alert("🎉 ပို့စ်တင်သွင်းခြင်း အောင်မြင်ပါပြီ!");
                     resetPostInputs();
                 })
                 .catch(err => alert("❌ Database Error: " + err.message));
@@ -713,13 +733,15 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
             document.getElementById('profile-container').classList.remove('hidden');
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('profile-email').innerText = "✉️ " + currentUser.email;
+
+            updateUIAuthState();
             alert(`🎉 ကြိုဆိုပါတယ် ${currentUser.username}`);
         }
 
         function handleLogout() {
             auth.signOut().then(() => {
                 currentUser.isLoggedIn = false;
-                currentUser.username = "";
+                currentUser.username = "ဧည့်သည် (Guest)";
                 currentUser.email = "";
                 currentUser.isAdmin = false;
                 
@@ -730,9 +752,12 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 document.getElementById('admin-indicator').classList.add('hidden');
                 document.getElementById('profile-container').classList.add('hidden');
                 document.getElementById('login-container').classList.remove('hidden');
-                alert("🚪 အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ။");
+
+                updateUIAuthState();
+                alert("🚪 အကောင့်မှ ထွက်ပြီးပါပြီ။ အသုံးပြုရန် အကောင့်တစ်ခု ဖွင့်ပါ/ဝင်ရောက်ပါ။");
             });
-    }
+        }
+
         function triggerAdminSecret() {
             avatarClickCount++;
             if (avatarClickCount >= 5) {
@@ -751,7 +776,7 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
 
         function deletePostPermanently(firebaseKey, type) {
             if (!currentUser.isAdmin) return;
-            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား R Lay?");
+            let confirmDelete = confirm("⚠️ ဤပို့စ်အား ဒေတာဘေ့စ်ထဲမှ အပြီးတိုင် ဖျက်ပစ်ရန် သေချာပါသလား?");
             if (!confirmDelete) return;
 
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -760,6 +785,7 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 .catch(err => alert("❌ Error: " + err.message));
         }
 
+        // ✅ Guest (ဧည့်သည်များ) လည်း Like ပေးခွင့်ပြုထားပါသည်
         function toggleLike(firebaseKey, type) {
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
             let docRef = db.collection(targetCollection).doc(firebaseKey);
@@ -768,9 +794,8 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                     docRef.update({ likes: (doc.data().likes || 0) + 1 });
                 }
             });
-        }
-
-        // 🔄 Post Share ပြုလုပ်ပေးသည့် Function
+    }
+        // ✅ Guest (ဧည့်သည်များ) လည်း Share ပြုလုပ်ခွင့်ပြုထားပါသည်
         function handleSharePost(firebaseKey, type, author, content) {
             let shareData = {
                 title: `NextGen Post - ${author}`,
@@ -786,7 +811,7 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                     .catch((err) => console.log('Share canceled/error:', err));
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert("📋 ပို့စ် Link ကို Clipboard ထဲသို့ ကူးယူပြီးပါပြီ။ အခြားနေရာများတွင် ကူးယူမျှဝေနိုင်ပါသည်။");
+                alert("📋 ပို့စ် Link ကို Clipboard ထဲသို့ ကူးယူပြီးပါပြီ။");
                 updateShareCount(firebaseKey, type);
             }
         }
@@ -801,13 +826,8 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
             });
         }
 
+        // ✅ Guest (ဧည့်သည်များ) လည်း Comment ပေးခွင့်ပြုထားပါသည်
         function openCommentKeyboard(firebaseKey, type) {
-            if (!currentUser.isLoggedIn) {
-                alert("💬 ကွန်မန့်ပေးပို့ရန်အတွက် ပထမဦးစွာ အကောင့်ဝင်ရောက်ပေးပါဗျာ။");
-                switchPage('profile', document.getElementById('nav-profile-btn'));
-                return;
-            }
-
             activeCommentPostId = firebaseKey;
             activeCommentType = type;
             let targetCollection = type === 'video' ? 'videos' : (type === 'ads' ? 'ads' : 'posts');
@@ -838,11 +858,13 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
             let text = input.value.trim();
             if (text === "" || activeCommentPostId === null) return;
 
+            let authorName = currentUser.isLoggedIn ? currentUser.username : "ဧည့်သည် (Guest)";
+
             let targetCollection = activeCommentType === 'video' ? 'videos' : (activeCommentType === 'ads' ? 'ads' : 'posts');
             db.collection(targetCollection).doc(activeCommentPostId).update({
                 comments: firebase.firestore.FieldValue.arrayUnion({
                     id: Date.now(),
-                    user: currentUser.username,
+                    user: authorName,
                     text: text
                 })
             }).then(() => { input.value = ""; });
@@ -982,6 +1004,7 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
                 document.getElementById('top-bar-avatar').src = savedAvatar;
             }
             
+            updateUIAuthState();
             listenToFirestore(); 
         };
 
@@ -1068,5 +1091,3 @@ db.collection('videos').orderBy('id', 'desc').onSnapshot((snapshot) => {
     </script>
 </body>
 </html>
-        
- 
